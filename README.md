@@ -1,1 +1,0 @@
-FintexAI - a project that helps calculate financial expenses and conduct analytics, saving data in a database, and new features for analyzing expenses using AI tools.
