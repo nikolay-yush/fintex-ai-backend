@@ -11,7 +11,19 @@ ModelCRUD = TypeVar("ModelCRUD", bound=BaseCRUDModel)
 
 
 class BaseCRUD(Generic[ModelCRUD]):
+    """
+        Base CRUD class.
+            get_one_by_id - get one model by id.
+            create_one - create one model.
+            update_one - update one model.
+            delete_one - delete one model.
+    """
     def __init__(self, db: AsyncSession, model: type[ModelCRUD]) -> None:
+        """
+        Args:
+            db (AsyncSession): The database session.
+            model (type[ModelCRUD]): The model class.
+        """
         self._db = db
         self._model = model
 

@@ -5,7 +5,6 @@ from app.features.users.enums import UserRole
 from app.shared.validators import validate_password_strength
 
 
-
 # --- USER RESPONSES / READ ---
 class UserResponse(BaseModel):
     id: int
