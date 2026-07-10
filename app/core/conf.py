@@ -3,10 +3,6 @@ from pydantic import BaseModel
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-ENV_STATE = os.getenv("ENV_STATE", "dev")
-ENV_FILE = f".env.{ENV_STATE}"
-
-
 # --- APP MAIN SETTINGS ---
 class AppSettings(BaseModel):
     VERSION: str = "0.1.0"
@@ -34,7 +30,7 @@ class Settings(BaseSettings):
     db: DBSettings
 
     model_config = SettingsConfigDict(
-        env_file=ENV_FILE,
+        env_file=f".env.{os.getenv('ENV_STATE', 'dev')}",
         env_file_encoding="utf-8",
         env_nested_delimiter="__",
         extra="ignore"
