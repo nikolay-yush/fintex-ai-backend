@@ -2,61 +2,53 @@
 
 ## Overview
 
-Alembic is used to manage database schema migrations and keep the PostgreSQL schema synchronized with SQLAlchemy models.
+Alembic manages database schema migrations and keeps the PostgreSQL schema synchronized with SQLAlchemy models.
 
 ### Features
 
-* Database schema versioning
-* Automatic migration generation
-* Safe upgrades and rollbacks
-* Consistent schema across all environments
+- Database schema versioning
+- Automatic migration generation
+- Safe upgrades and rollbacks
+- Consistent schema across all environments
 
 ---
 
 ## Installation
 
-# Command                                   |   Description                                      
------------------------------------------   |   ------------------------------------------------ 
-`uv add alembic`                            |   Install Alembic.                                 
-`uv run alembic init -t async migrations`   |   Initialize the migration environment (run once). 
+| Command | Description |
+|---------|-------------|
+| `uv add alembic` | Install Alembic. |
+| `uv run alembic init -t async migrations` | Initialize Alembic (run once). |
 
 ---
 
-## Migration Commands
+## Common Commands
 
-# Command                                                      |   Description                                  
-------------------------------------------------------------   |   -------------------------------------------- 
-`uv run alembic revision --autogenerate -m "migration_name"`   |   Generate a new migration from model changes. 
-`uv run alembic upgrade head`                                  |   Apply all pending migrations.                
-`uv run alembic downgrade -1`                                  |   Roll back the last migration.                
-`uv run alembic downgrade base`                                |   Roll back all migrations.                    
-`uv run alembic current`                                       |   Display the current migration version.       
+| Command | Description |
+|---------|-------------|
+| `uv run alembic revision --autogenerate -m "migration_name"` | Generate a new migration. |
+| `uv run alembic upgrade head` | Apply all pending migrations. |
+| `uv run alembic downgrade -1` | Roll back the last migration. |
+| `uv run alembic downgrade base` | Roll back all migrations. |
+| `uv run alembic current` | Show current database revision. |
+| `uv run alembic history` | Show migration history. |
+| `uv run alembic heads` | Show latest migration revision(s). |
 
 ---
 
 # Project Configuration
 
-The default Alembic configuration was adapted to match the project's asynchronous architecture.
-
----
-
-## 1. Database URL
-
-### Configuration
+## Database URL
 
 ```python
 config.set_main_option("sqlalchemy.url", settings.db.DB_URL)
 ```
 
-### Purpose
-
-Uses the application's centralized configuration instead of a hardcoded connection string in `alembic.ini`.
+Uses the application configuration instead of a hardcoded connection string.
 
 ---
 
-## 2. Project Metadata
-
-### Configuration
+## Metadata
 
 ```python
 from app.core.db.postgres.base import Base
@@ -65,99 +57,11 @@ import app.core.db.postgres.models
 target_metadata = Base.metadata
 ```
 
-### Purpose
-
-Registers all SQLAlchemy models through a shared metadata object, allowing Alembic to detect schema changes automatically.
+Registers all SQLAlchemy models for automatic schema comparison.
 
 ---
 
-## 3. Offline Migration Mode
-
-### Function
-
-```python
-run_migrations_offline()
-```
-
-### Purpose
-
-Generates SQL migration scripts without connecting to the database.
-
-### Configuration
-
-* `url` — database connection string
-* `target_metadata` — project metadata
-* `literal_binds=True` — embeds values directly into SQL
-* `dialect_opts` — database-specific SQL generation options
-
----
-
-## 4. Online Migration Mode
-
-### Function
-
-```python
-run_migrations_online()
-```
-
-### Purpose
-
-Main migration entry point.
-
-Creates an asynchronous event loop and starts the migration process using the project configuration.
-
-Used by:
-
-```text
-alembic upgrade head
-alembic downgrade
-alembic revision --autogenerate
-```
-
----
-
-## 5. Async Engine
-
-### Function
-
-```python
-run_async_migrations()
-```
-
-### Purpose
-
-Creates an `AsyncEngine`, establishes a temporary database connection, and prepares the migration environment.
-
-### Configuration
-
-* Application database URL
-* `asyncpg` driver
-* `NullPool` connection pool
-* Automatic connection cleanup
-
----
-
-## 6. Migration Context
-
-### Function
-
-```python
-do_run_migrations()
-```
-
-### Purpose
-
-Configures the migration context and executes all pending operations within a database transaction.
-
-### Configuration
-
-* `connection` — active database connection
-* `target_metadata` — project metadata
-* `compare_type=True` — detect column type changes
-
----
-
-## Execution Flow
+## Async Migration Flow
 
 ```text
 Alembic CLI
@@ -186,10 +90,111 @@ PostgreSQL
 
 ---
 
-## Result
+# Development Workflow
 
-* Asynchronous migration support
-* Automatic model discovery
-* Automatic schema comparison
-* Transaction-safe migrations
-* Shared application configuration
+Typical workflow when changing the database schema.
+
+```text
+Modify SQLAlchemy Models
+        │
+        ▼
+Generate Migration
+        │
+        ▼
+Review Migration
+        │
+        ▼
+Apply Migration
+        │
+        ▼
+Run Tests
+        │
+        ▼
+Commit Changes
+```
+
+Typical commands:
+
+```bash
+uv run alembic revision --autogenerate -m "add wallets table"
+
+uv run alembic upgrade head
+```
+
+---
+
+# Production Deployment
+
+Database schema is updated **only through Alembic**.
+
+Deployment flow:
+
+```text
+Deploy New Version
+        │
+        ▼
+alembic upgrade head
+        │
+        ▼
+Start / Restart Application
+```
+
+Example:
+
+```bash
+git pull
+
+uv sync
+
+uv run alembic upgrade head
+
+systemctl restart fintexai
+```
+
+---
+
+# Testing
+
+The test database should use the same migration history as production.
+
+```text
+Create Test Database
+        │
+        ▼
+alembic upgrade head
+        │
+        ▼
+Run Tests
+        │
+        ▼
+Rollback Between Tests
+```
+
+This ensures that tests always run against the same schema as production.
+
+---
+
+# Best Practices
+
+- One logical change per migration.
+- Review autogenerated migrations before committing.
+- Commit migrations together with model changes.
+- Apply migrations before starting a new application version.
+- Use Alembic as the single source of truth for schema changes.
+- Test migrations against the test database before deployment.
+- Never modify an already applied migration.
+- Create new migrations instead of editing old ones.
+
+---
+
+# Do Not Use
+
+Do **not** use the following in projects that already use Alembic:
+
+```python
+Base.metadata.create_all()
+
+Base.metadata.drop_all()
+```
+
+These methods bypass migration history and should only be used for learning, prototypes, or temporary scripts—not for development, testing, or production environments.
