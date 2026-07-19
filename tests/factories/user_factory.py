@@ -1,5 +1,7 @@
 from uuid import uuid4
 
+from app.features.users.models import User
+
 
 class UserFactory:
 
@@ -16,3 +18,11 @@ class UserFactory:
         data.update(kwargs)
 
         return data
+    
+    @staticmethod
+    def build_model(**kwargs) -> User:
+        """Build User model without database."""
+
+        return User(
+            **UserFactory.build_dict(**kwargs)
+        )

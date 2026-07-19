@@ -1,7 +1,9 @@
 from app.features.users.repo import UserRepository
 from tests.factories.user_factory import UserFactory
 
-async def test_create_one_success(db_session):
+from sqlalchemy.ext.asyncio import AsyncSession
+
+async def test_create_one_success(db_session: AsyncSession):
     # Arrange
     repo = UserRepository(db_session)
 
@@ -9,6 +11,7 @@ async def test_create_one_success(db_session):
 
     # Act
     created_user = await repo.create_one(data)
+    
     # Assert
     assert created_user is not None
     assert created_user.id is not None
