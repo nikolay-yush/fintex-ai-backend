@@ -25,9 +25,16 @@ class DBSettings(BaseModel):
         return f"postgresql+asyncpg://{self.DB_USER}:{self.DB_PASSWORD}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
 
 
+# --- JWT SETTINGS ---
+class JWTSettings(BaseModel):
+    JWT_SECRET_KEY: str
+    JWT_ALGORITHM: str = "HS256"
+    JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+
 class Settings(BaseSettings):
     app: AppSettings
     db: DBSettings
+    jwt: JWTSettings
 
     model_config = SettingsConfigDict(
         env_file=f".env.{os.getenv('ENV_STATE', 'dev')}",

@@ -63,3 +63,4 @@ class UserService:
         current_user: User,
     ) -> User | None:
         return await self.user_repo.delete_one(current_user.id)
+

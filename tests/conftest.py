@@ -9,4 +9,5 @@ validate_test_env()
 
 pytest_plugins = [
     "tests.fixtures.database",
+    "tests.fixtures.client",
 ]

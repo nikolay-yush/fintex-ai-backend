@@ -95,4 +95,3 @@ class UserRepository(BaseCRUD[User]):
         result = await self._db.execute(query)
 
         return list(result.scalars().all())
-    

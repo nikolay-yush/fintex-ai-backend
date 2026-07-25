@@ -1,0 +1,52 @@
+from typing import Annotated
+
+from fastapi import Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer
+
+from app.features.auth.security import decode_access_token
+from app.features.auth.service import AuthService
+from app.features.users.models import User
+from app.features.users.repo import UserRepository
+from app.features.users.dependencies import get_user_repo
+
+oauth2_scheme = OAuth2PasswordBearer(
+    tokenUrl="/api/v1/auth/login",
+)
+
+
+async def get_current_user(
+    token: Annotated[str, Depends(oauth2_scheme)],
+    user_repo: Annotated[
+        UserRepository,
+        Depends(get_user_repo),
+    ],
+) -> User:
+    """Return the currently authenticated user."""
+
+    user_id = decode_access_token(token)
+
+    if user_id is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid authentication credentials",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    user = await user_repo.get_one_by_id(
+        model_id=user_id,
+    )
+
+    if user is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User not found",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    return user
+
+
+def get_auth_service(
+    user_repo: UserRepository = Depends(get_user_repo),
+) -> AuthService:
+    return AuthService(user_repo=user_repo)
