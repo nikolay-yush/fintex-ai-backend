@@ -5,6 +5,7 @@ from app.features.users.schemas import (
     UserFilters,
     UserUpdateProfile,
 )
+from app.features.users.exceptions import UserNotFoundException
 
 
 class UserService:
@@ -15,13 +16,6 @@ class UserService:
         self.user_repo= user_repo
 
     #  **** READ OPERATIONS ****
-
-    async def get_user_profile(
-        self,
-        current_user: User,
-    ) -> User:
-        return current_user
-    
     async def get_user_by_id(
         self,
         user_id: int,
@@ -54,13 +48,28 @@ class UserService:
         current_user: User,
         data: UserUpdateProfile,
     ) -> User | None:
-        values = data.model_dump()
-        return await self.user_repo.update_one(current_user.id, values)
+        update_data = data.model_dump(
+            exclude_unset=True
+        )
+
+        if not update_data:
+            return current_user 
+
+        return await self.user_repo.update_one(
+            current_user.id, 
+            update_data
+        )
 
     #  **** DELETE OPERATIONS ****
-    async def delete_user(
+    async def delete_user_by_id(
         self,
-        current_user: User,
-    ) -> User | None:
-        return await self.user_repo.delete_one(current_user.id)
+        user_id: int,
+    ) -> None:
+        user = await self.user_repo.get_one_by_id(
+            model_id=user_id,
+        )
 
+        if user is None:
+            raise UserNotFoundException()
+
+        await self.user_repo.delete_one(user_id)

@@ -14,13 +14,13 @@ class TestDeleteUser:
         user_repo_mock.delete_one.return_value = user
 
         # Act
-        result = await user_service.delete_user(user)
+        result = await user_service.delete_user_by_id(user.id)
 
         # Assert
         user_repo_mock.delete_one.assert_awaited_once_with(
             user.id,
         )
-        assert result == user
+        assert result is None
 
     async def test_delete_user_not_found(
         self,
@@ -32,7 +32,7 @@ class TestDeleteUser:
         user_repo_mock.delete_one.return_value = None
 
         # Act
-        result = await user_service.delete_user(user)
+        result = await user_service.delete_user_by_id(user.id)
 
         # Assert
         user_repo_mock.delete_one.assert_awaited_once_with(

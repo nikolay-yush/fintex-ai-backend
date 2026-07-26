@@ -2,6 +2,7 @@ from typing import Annotated
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
+from app.features.users.enums import UserRole
 
 from app.features.auth.security import decode_access_token
 from app.features.auth.service import AuthService
@@ -44,6 +45,22 @@ async def get_current_user(
         )
 
     return user
+
+async def get_current_admin(
+    current_user: Annotated[
+        User,
+        Depends(get_current_user),
+    ],
+) -> User:
+    """Return the current user if they have admin privileges."""
+
+    if current_user.role != UserRole.ADMIN:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin access required",
+        )
+
+    return current_user
 
 
 def get_auth_service(
