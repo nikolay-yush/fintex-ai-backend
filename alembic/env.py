@@ -8,7 +8,7 @@ from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
-from app.core.conf import settings
+from app.core.settings import settings
 from app.core.db.postgres.base import Base
 import app.core.db.postgres.models  # noqa: F401
 

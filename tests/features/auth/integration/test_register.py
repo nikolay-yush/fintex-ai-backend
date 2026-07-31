@@ -17,7 +17,10 @@ class TestRegister:
         user: User,
     ):
         # Arrange
-        auth_service = AsyncMock(spec=AuthService)
+        auth_service = AsyncMock(
+            spec=AuthService,
+        )
+
         auth_service.register.return_value = user
 
         app.dependency_overrides[get_auth_service] = (
@@ -37,7 +40,9 @@ class TestRegister:
         )
 
         # Assert
-        assert response.status_code == status.HTTP_201_CREATED
+        assert response.status_code == (
+            status.HTTP_201_CREATED
+        )
 
         response_data = response.json()
 
@@ -47,6 +52,14 @@ class TestRegister:
 
         auth_service.register.assert_awaited_once()
 
+        register_data = (
+            auth_service.register.call_args.args[0]
+        )
+
+        assert register_data.email == data["email"]
+        assert register_data.password == data["password"]
+        assert register_data.full_name == data["full_name"]
+
         # Cleanup
         app.dependency_overrides.clear()
 
@@ -55,7 +68,9 @@ class TestRegister:
         client,
     ):
         # Arrange
-        auth_service = AsyncMock(spec=AuthService)
+        auth_service = AsyncMock(
+            spec=AuthService,
+        )
 
         auth_service.register.side_effect = (
             UserAlreadyExistsException()
@@ -78,7 +93,9 @@ class TestRegister:
         )
 
         # Assert
-        assert response.status_code == status.HTTP_409_CONFLICT
+        assert response.status_code == (
+            status.HTTP_409_CONFLICT
+        )
 
         assert response.json()["detail"] == (
             "User with this email already exists"
@@ -94,7 +111,9 @@ class TestRegister:
         client,
     ):
         # Arrange
-        auth_service = AsyncMock(spec=AuthService)
+        auth_service = AsyncMock(
+            spec=AuthService,
+        )
 
         app.dependency_overrides[get_auth_service] = (
             lambda: auth_service
@@ -121,3 +140,4 @@ class TestRegister:
 
         # Cleanup
         app.dependency_overrides.clear()
+

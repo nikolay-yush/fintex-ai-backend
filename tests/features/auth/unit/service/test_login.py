@@ -15,9 +15,14 @@ class TestLogin:
         auth_user: User
     ):
         # Arrange
+        db_async_session = AsyncMock()
         user_repo = AsyncMock()
+        auth_repo = AsyncMock()
+
         auth_service = AuthService(
+            db_async_session=db_async_session,
             user_repo=user_repo,
+            auth_repo=auth_repo,
         )
 
         data = UserLogin(
@@ -40,9 +45,14 @@ class TestLogin:
 
     async def test_login_user_not_found(self):
         # Arrange
+        db_async_session = AsyncMock()
         user_repo = AsyncMock()
+        auth_repo = AsyncMock()
+
         auth_service = AuthService(
+            db_async_session=db_async_session,
             user_repo=user_repo,
+            auth_repo=auth_repo,
         )
 
         data = UserLogin(
@@ -65,9 +75,14 @@ class TestLogin:
         auth_user: User,
     ):
         # Arrange
+        db_async_session = AsyncMock()
         user_repo = AsyncMock()
+        auth_repo = AsyncMock()
+        
         auth_service = AuthService(
+            db_async_session=db_async_session,
             user_repo=user_repo,
+            auth_repo=auth_repo,
         )
 
         data = UserLogin(

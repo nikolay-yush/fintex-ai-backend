@@ -1,6 +1,6 @@
 import os
 
-from app.core.conf import settings
+from app.core.settings import settings
 
 
 def validate_test_env() -> None:

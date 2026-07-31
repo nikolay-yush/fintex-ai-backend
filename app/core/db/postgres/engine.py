@@ -1,5 +1,5 @@
 from sqlalchemy.ext.asyncio import create_async_engine
-from app.core.conf import settings
+from app.core.settings import settings
 
 
 engine = create_async_engine(

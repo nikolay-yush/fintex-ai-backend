@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}{% endblock %}</title>
+</head>
+
+<body
+    style="
+        font-family: Arial, sans-serif;
+        background:#f5f5f5;
+        padding:40px;
+    "
+>
+
+<div
+    style="
+        max-width:600px;
+        margin:auto;
+        background:white;
+        padding:40px;
+        border-radius:12px;
+    "
+>
+
+<h1>Fintex</h1>
+
+{% block content %}
+{% endblock %}
+
+<hr>
+
+<p
+    style="
+        color:#999;
+        font-size:12px;
+    "
+>
+This email was sent automatically.
+</p>
+
+</div>
+
+</body>
+</html>

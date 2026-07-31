@@ -9,6 +9,8 @@ class AppSettings(BaseModel):
     PROJECT_NAME: str = "FintexAI"
     DESCRIPTION: str = "FintexAI is a platform to analyze financial data."
     DEBUG: bool = False
+    HOST_PROTOCOL: str = "http"
+    HOST: str = "localhost"
     PORT: int = 8000
 
 
@@ -31,10 +33,26 @@ class JWTSettings(BaseModel):
     JWT_ALGORITHM: str = "HS256"
     JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 
+
+class MailSettings(BaseModel):
+    USERNAME: str
+    PASSWORD: str
+
+    FROM: str
+    FROM_NAME: str
+
+    PORT: int
+    SERVER: str
+
+    STARTTLS: bool = True
+    SSL_TLS: bool = False
+
+
 class Settings(BaseSettings):
     app: AppSettings
     db: DBSettings
     jwt: JWTSettings
+    mail: MailSettings
 
     model_config = SettingsConfigDict(
         env_file=f".env.{os.getenv('ENV_STATE', 'dev')}",

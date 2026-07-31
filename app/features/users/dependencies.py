@@ -8,11 +8,16 @@ from app.features.users.service import UserService
 
 
 def get_user_repo(
-    db: AsyncSession = Depends(get_async_session),
+    db_async_session: AsyncSession = Depends(get_async_session),
 ) -> UserRepository:
-    return UserRepository(db=db)
+    return UserRepository(db_async_session=db_async_session)
 
 def get_user_service(
-    user_repo: UserRepository = Depends(get_user_repo),
+    db_async_session: AsyncSession = Depends(get_async_session),
 ) -> UserService:
-    return UserService(user_repo=user_repo)
+    user_repo = UserRepository(db_async_session=db_async_session)
+
+    return UserService(
+        db_async_session=db_async_session,
+        user_repo=user_repo,
+    )

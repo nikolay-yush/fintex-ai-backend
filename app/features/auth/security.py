@@ -1,10 +1,11 @@
 import jwt
+import secrets
 
 from argon2 import PasswordHasher
 from argon2.exceptions import InvalidHashError, VerificationError
 from jwt import InvalidTokenError
 from datetime import datetime, timedelta, timezone
-from app.core.conf import settings
+from app.core.settings import settings
 
 
 password_hasher = PasswordHasher()
@@ -67,3 +68,8 @@ def decode_access_token(token: str) -> int | None:
         TypeError,
     ):
         return None
+
+def create_email_verification_token() -> str:
+    """Generate a secure email verification token."""
+
+    return secrets.token_urlsafe(32)

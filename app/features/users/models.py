@@ -18,6 +18,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from app.features.auth.models import EmailVerificationToken
 from app.shared.base_model import BaseCRUDModel
 from app.features.users.enums import UserRole
 
@@ -90,5 +91,13 @@ class User(BaseCRUDModel):
         server_default=func.now(), 
         onupdate=func.now(), 
         nullable=False
+    )
+
+    email_verification_token: Mapped[
+        "EmailVerificationToken | None"
+    ] = relationship(
+        back_populates="user",
+        uselist=False,
+        cascade="all, delete-orphan",
     )
     

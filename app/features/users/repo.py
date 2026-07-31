@@ -10,14 +10,14 @@ from app.shared.base_crud import BaseCRUD
 
 class UserRepository(BaseCRUD[User]):
 
-    def __init__(self, db: AsyncSession) -> None:
+    def __init__(self, db_async_session: AsyncSession) -> None:
         super().__init__(
-            db=db,
+            db_async_session=db_async_session,
             model=User,
         )
     async def get_user_by_email(self, email: str) -> User | None:
         query = select(self._model).where(self._model.email == email)
-        result = await self._db.execute(query)
+        result = await self._db_async_session.execute(query)
         return result.scalar_one_or_none()
     
     async def get_users_by_filters(
@@ -92,6 +92,6 @@ class UserRepository(BaseCRUD[User]):
         query = query.offset(filters.skip)
         query = query.limit(filters.limit)
 
-        result = await self._db.execute(query)
+        result = await self._db_async_session.execute(query)
 
         return list(result.scalars().all())

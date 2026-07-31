@@ -2,6 +2,10 @@ from typing import Annotated
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.core.db.postgres.session import get_async_session
+from app.features.auth.repo import AuthRepository
 from app.features.users.enums import UserRole
 
 from app.features.auth.security import decode_access_token
@@ -44,6 +48,18 @@ async def get_current_user(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
+    if not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="User account is inactive",
+        )
+
+    if user.is_banned:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="User account is banned",
+        )
+
     return user
 
 async def get_current_admin(
@@ -63,7 +79,19 @@ async def get_current_admin(
     return current_user
 
 
+def get_auth_repo(
+    db_async_session: AsyncSession = Depends(get_async_session),
+) -> AuthRepository:
+    return AuthRepository(db_async_session=db_async_session)
+
 def get_auth_service(
-    user_repo: UserRepository = Depends(get_user_repo),
+    db_async_session: AsyncSession = Depends(get_async_session)
 ) -> AuthService:
-    return AuthService(user_repo=user_repo)
+    auth_repo: AuthRepository = AuthRepository(db_async_session=db_async_session)
+    user_repo: UserRepository = UserRepository(db_async_session=db_async_session)
+
+    return AuthService(
+        db_async_session=db_async_session,
+        auth_repo=auth_repo,
+        user_repo=user_repo,
+    )

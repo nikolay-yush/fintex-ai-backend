@@ -1,3 +1,5 @@
+from sqlalchemy.ext.asyncio import AsyncSession
+from app.features.auth.exceptions import UserAlreadyExistsException
 from app.features.users.models import User
 from app.features.users.repo import UserRepository
 from app.features.users.schemas import (
@@ -11,9 +13,11 @@ from app.features.users.exceptions import UserNotFoundException
 class UserService:
     def __init__(
         self,
+        db_async_session: AsyncSession,
         user_repo: UserRepository,
     ) -> None:
-        self.user_repo= user_repo
+        self.db_async_session = db_async_session
+        self.user_repo = user_repo
 
     #  **** READ OPERATIONS ****
     async def get_user_by_id(
@@ -40,7 +44,14 @@ class UserService:
         data: UserCreate,
     ) -> User | None:
         values = data.model_dump()
-        return await self.user_repo.create_one(values)
+        user = await self.user_repo.create_one(values)
+
+        if user is None:
+            raise UserAlreadyExistsException()
+
+        await self.db_async_session.commit()
+        
+        return user
     
     #  *** UPDATE OPERATIONS ****
     async def update_user_profile(
@@ -55,10 +66,16 @@ class UserService:
         if not update_data:
             return current_user 
 
-        return await self.user_repo.update_one(
+        user = await self.user_repo.update_one(
             current_user.id, 
             update_data
         )
+
+        if user is None:
+            raise UserNotFoundException()
+        
+        await self.db_async_session.commit()
+        return user
 
     #  **** DELETE OPERATIONS ****
     async def delete_user_by_id(
@@ -73,3 +90,6 @@ class UserService:
             raise UserNotFoundException()
 
         await self.user_repo.delete_one(user_id)
+
+        await self.db_async_session.commit()
+        

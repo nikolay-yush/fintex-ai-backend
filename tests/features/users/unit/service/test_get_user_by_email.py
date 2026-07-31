@@ -1,5 +1,7 @@
 from app.features.users.models import User
 from app.features.users.service import UserService
+from app.features.users.dependencies import get_user_service
+from unittest.mock import AsyncMock
 
 
 class TestGetUserByEmail:
@@ -7,7 +9,7 @@ class TestGetUserByEmail:
     async def test_get_user_by_email_success(
         self,
         user_service: UserService,
-        user_repo_mock,
+        user_repo_mock: AsyncMock,
         user: User,
     ):
         # Arrange
@@ -25,7 +27,7 @@ class TestGetUserByEmail:
     async def test_get_user_by_email_not_found(
         self,
         user_service: UserService,
-        user_repo_mock,
+        user_repo_mock: AsyncMock,
     ):
         # Arrange
         user_repo_mock.get_user_by_email.return_value = None

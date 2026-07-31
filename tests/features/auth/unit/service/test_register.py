@@ -15,8 +15,12 @@ class TestRegister:
     ):
         # Arrange
         user_repo = AsyncMock()
-        user_service = AuthService(
+        auth_repo = AsyncMock()
+
+        auth_service = AuthService(
+            db_async_session=AsyncMock(),
             user_repo=user_repo,
+            auth_repo=auth_repo,
         )
 
         data = UserRegister(
@@ -29,7 +33,7 @@ class TestRegister:
         user_repo.create_one.return_value = user
 
         # Act
-        result = await user_service.register(data)
+        result = await auth_service.register(data)
 
         # Assert
         assert result == user
@@ -40,18 +44,37 @@ class TestRegister:
 
         user_repo.create_one.assert_awaited_once()
 
-        created_data = user_repo.create_one.call_args.args[0]
+        created_user_data = (
+            user_repo.create_one.call_args.args[0]
+        )
 
-        assert created_data["email"] == data.email
-        assert created_data["full_name"] == data.full_name
-        assert "password" not in created_data
-        assert "hashed_password" in created_data
+        assert created_user_data["email"] == data.email
+        assert created_user_data["full_name"] == data.full_name
+        assert "password" not in created_user_data
+        assert "hashed_password" in created_user_data
 
-    async def test_register_user_already_exists(self):
+        # Verification token
+        auth_repo.create_one.assert_awaited_once()
+
+        created_token_data = (
+            auth_repo.create_one.call_args.args[0]
+        )
+
+        assert created_token_data["user_id"] == user.id
+        assert created_token_data["token"]
+        assert created_token_data["expires_at"] is not None
+
+    async def test_register_user_already_exists(
+        self,
+    ):
         # Arrange
         user_repo = AsyncMock()
-        user_service = AuthService(
+        auth_repo = AsyncMock()
+
+        auth_service = AuthService(
+            db_async_session=AsyncMock(),
             user_repo=user_repo,
+            auth_repo=auth_repo,
         )
 
         data = UserRegister(
@@ -60,19 +83,29 @@ class TestRegister:
             full_name="Existing User",
         )
 
-        user_repo.get_user_by_email.return_value = User(
+        existing_user = User(
             id=1,
             email=data.email,
             hashed_password="hashed_password",
             full_name=data.full_name,
         )
 
+        user_repo.get_user_by_email.return_value = (
+            existing_user
+        )
+
         # Act / Assert
-        with pytest.raises(UserAlreadyExistsException):
-            await user_service.register(data)
+        with pytest.raises(
+            UserAlreadyExistsException,
+        ):
+            await auth_service.register(data)
 
         user_repo.get_user_by_email.assert_awaited_once_with(
             data.email,
         )
 
         user_repo.create_one.assert_not_awaited()
+
+        # Verification token must not be created
+        auth_repo.create_one.assert_not_awaited()
+

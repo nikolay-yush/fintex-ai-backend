@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}
+Verify Email
+{% endblock %}
+
+{% block content %}
+
+<h2>Hello!</h2>
+
+<p>
+    Thank you for registering in <strong>Fintex</strong>.
+</p>
+
+<p>
+    Please confirm your email address by clicking the button below.
+</p>
+
+<p
+    style="
+        text-align:center;
+        margin:40px 0;
+    "
+>
+    <a
+        href="{{ verification_url }}"
+        style="
+            background:#2563eb;
+            color:white;
+            padding:14px 28px;
+            border-radius:8px;
+            text-decoration:none;
+            display:inline-block;
+        "
+    >
+        Verify Email
+    </a>
+</p>
+
+<p>
+    If you did not create an account, simply ignore this email.
+</p>
+
+<p>
+    This verification link expires in <strong>24 hours</strong>.
+</p>
+
+{% endblock %}

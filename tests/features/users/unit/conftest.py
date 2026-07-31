@@ -19,7 +19,10 @@ def user_service(
     user_repo_mock: AsyncMock,
 ) -> UserService:
     """UserService with mocked repository."""
-    return UserService(user_repo=user_repo_mock)
+    return UserService(
+        db_async_session=AsyncMock(),
+        user_repo=user_repo_mock
+    )
 
 
 @pytest.fixture
