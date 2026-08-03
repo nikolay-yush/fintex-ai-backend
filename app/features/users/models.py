@@ -3,6 +3,7 @@ from typing import List, Optional
 from datetime import datetime, timezone, timedelta
 from decimal import Decimal
 
+from alembic.environment import TYPE_CHECKING
 from pydantic import BaseModel
 from sqlalchemy import (
     CheckConstraint,
@@ -18,9 +19,14 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.features.auth.models import EmailVerificationToken
 from app.shared.base_model import BaseCRUDModel
 from app.features.users.enums import UserRole
+
+if TYPE_CHECKING:
+    from app.features.auth.models import RefreshToken
+    from app.features.auth.models import PasswordResetToken
+    from app.features.auth.models import EmailVerificationToken
+    from app.features.auth.models import PasswordResetToken
 
 
 class User(BaseCRUDModel):
@@ -100,4 +106,14 @@ class User(BaseCRUDModel):
         uselist=False,
         cascade="all, delete-orphan",
     )
-    
+
+    password_reset_tokens: Mapped[list["PasswordResetToken"]] = relationship(
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )
+
+    refresh_tokens: Mapped[list["RefreshToken"]] = relationship(
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )
+        

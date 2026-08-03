@@ -5,6 +5,9 @@ from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.db.postgres.session import get_async_session
+from app.core.email.sender import SMTPEmailSender
+from app.core.email.renderer import EmailRenderer
+from app.core.email.service import EmailService
 from app.features.auth.repo import AuthRepository
 from app.features.users.enums import UserRole
 
@@ -84,14 +87,31 @@ def get_auth_repo(
 ) -> AuthRepository:
     return AuthRepository(db_async_session=db_async_session)
 
+
+def get_email_sender() -> SMTPEmailSender:
+    return SMTPEmailSender()
+
+def get_email_renderer() -> EmailRenderer:
+    return EmailRenderer()
+
+def get_email_service(
+    sender: SMTPEmailSender = Depends(get_email_sender),
+    renderer: EmailRenderer = Depends(get_email_renderer),
+) -> EmailService:
+    return EmailService(sender=sender, renderer=renderer)
+
+
 def get_auth_service(
-    db_async_session: AsyncSession = Depends(get_async_session)
+    db_async_session: AsyncSession = Depends(get_async_session),
+    email_service: EmailService = Depends(get_email_service)
 ) -> AuthService:
     auth_repo: AuthRepository = AuthRepository(db_async_session=db_async_session)
     user_repo: UserRepository = UserRepository(db_async_session=db_async_session)
+    
 
     return AuthService(
         db_async_session=db_async_session,
         auth_repo=auth_repo,
         user_repo=user_repo,
+        email_service=email_service,
     )

@@ -1,6 +1,6 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.features.auth.models import EmailVerificationToken
+from app.features.auth.models import EmailVerificationToken, PasswordResetToken, RefreshToken
 from app.shared.base_crud import BaseCRUD
 
 
@@ -33,6 +33,77 @@ class AuthRepository(BaseCRUD[EmailVerificationToken]):
             EmailVerificationToken,
         ).where(
             EmailVerificationToken.user_id == user_id,
+        )
+
+        result = await self._db_async_session.execute(
+            query,
+        )
+
+        return result.scalar_one_or_none()
+
+    #  **** PASSWORD RESET OPERATIONS ****
+    async def get_reset_token(
+        self,
+        token: str,
+    ) -> PasswordResetToken | None:
+
+        query = select(
+            PasswordResetToken,
+        ).where(
+            PasswordResetToken.token == token,
+        )
+
+        result = await self._db_async_session.execute(
+            query,
+        )
+
+        return result.scalar_one_or_none()
+
+    async def get_reset_token_by_user_id(
+        self,
+        user_id: int,
+    ) -> PasswordResetToken | None:
+
+        query = select(
+            PasswordResetToken,
+        ).where(
+            PasswordResetToken.user_id == user_id,
+        )
+
+        result = await self._db_async_session.execute(
+            query,
+        )
+
+        return result.scalar_one_or_none()
+
+    #  **** REFRESH TOKEN OPERATIONS ****
+    async def get_refresh_token(
+        self,
+        token: str,
+    ) -> RefreshToken | None:
+
+        query = select(
+            RefreshToken,
+        ).where(
+            RefreshToken.token == token,
+        )
+
+        result = await self._db_async_session.execute(
+            query,
+        )
+
+        return result.scalar_one_or_none()
+
+
+    async def get_refresh_token_by_user_id(
+        self,
+        user_id: int,
+    ) -> RefreshToken | None:
+
+        query = select(
+            RefreshToken,
+        ).where(
+            RefreshToken.user_id == user_id,
         )
 
         result = await self._db_async_session.execute(

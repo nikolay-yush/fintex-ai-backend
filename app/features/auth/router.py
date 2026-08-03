@@ -5,6 +5,9 @@ from fastapi import APIRouter, Depends, status
 from app.features.auth.dependencies import get_auth_service
 from app.features.auth.schemas import (
     EmailVerificationRequest,
+    ForgotPasswordRequest,
+    PasswordResetConfirm,
+    RefreshTokenRequest,
     ResendVerificationRequest,
     TokenResponse,
     UserLogin,
@@ -12,6 +15,7 @@ from app.features.auth.schemas import (
 )
 from app.features.auth.service import AuthService
 from app.features.users.schemas import UserResponse
+from app.features.wallets import router
 
 
 auth_router = APIRouter(
@@ -75,3 +79,50 @@ async def resend_verification_email(
     return {
         "message": "Verification email sent",
     }
+
+@auth_router.post("/forgot-password", status_code=status.HTTP_200_OK, response_model=dict)
+async def forgot_password(
+    data: ForgotPasswordRequest,
+    auth_service: AuthService = Depends(
+        get_auth_service,
+    ),
+) -> dict[str, str]:
+
+    await auth_service.request_password_reset(
+        email=data.email,
+    )
+
+    return {
+        "message": (
+            "If an account with this email exists, "
+            "a password reset email has been sent."
+        )
+    }
+
+@auth_router.post("/reset-password", status_code=status.HTTP_200_OK, response_model=dict)
+async def reset_password(
+    data: PasswordResetConfirm,
+    auth_service: AuthService = Depends(
+        get_auth_service,
+    ),
+) -> dict[str, str]:
+
+    await auth_service.reset_password(
+        data=data,
+    )
+
+    return {
+        "message": "Password successfully changed."
+    }
+
+@auth_router.post("/refresh", response_model=TokenResponse, status_code=status.HTTP_200_OK)
+async def refresh_token(
+    data: RefreshTokenRequest,
+    auth_service: AuthService = Depends(
+        get_auth_service,
+    ),
+) -> TokenResponse:
+
+    return await auth_service.refresh_access_token(
+        refresh_token=data.refresh_token,
+    )
