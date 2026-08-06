@@ -3,15 +3,21 @@ from datetime import datetime, timedelta, timezone
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.email.service import EmailService
-from app.features.auth.exceptions import (
-    FailedToCreateUserException,
+
+from app.features.auth.exceptions.email_verification import (
     FailedToCreateVerificationTokenException,
-    UserAlreadyExistsException,
 )
+
+from app.features.auth.exceptions.registration import (
+    FailedToCreateUserException,
+    UserAlreadyExistsException,     
+)   
+
+
 from app.features.auth.repositories.email_verification_token import (
     EmailVerificationTokenRepository,
 )
-from app.features.auth.schemas import UserRegister
+from app.features.auth.schemas.registration import UserRegister
 from app.features.auth.security import (
     create_email_verification_token,
     hash_password,

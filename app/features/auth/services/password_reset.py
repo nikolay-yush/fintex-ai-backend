@@ -3,14 +3,16 @@ from datetime import datetime, timedelta, timezone
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.email.service import EmailService
-from app.features.auth.exceptions import (
+
+from app.features.auth.exceptions.password_reset import (
     PasswordResetTokenExpiredException,
     PasswordResetTokenNotFoundException,
 )
+
 from app.features.auth.repositories.password_reset_token import (
     PasswordResetTokenRepository,
 )
-from app.features.auth.schemas import PasswordResetConfirm
+from app.features.auth.schemas.password_reset import PasswordResetConfirm
 from app.features.auth.security import (
     create_email_verification_token,
     hash_password,

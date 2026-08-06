@@ -2,15 +2,18 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, Query, status
 
-from app.features.auth.schemas import (
-    ForgotPasswordRequest,
-    PasswordResetConfirm,
-    RefreshTokenRequest,
-    ResendVerificationRequest,
+from app.features.auth.schemas.authentication import (
     TokenResponse,
     UserLogin,
-    UserRegister,
+)    
+from app.features.auth.schemas.email_verification import ResendVerificationRequest
+from app.features.auth.schemas.refresh_token import RefreshTokenRequest
+from app.features.auth.schemas.registration import UserRegister     
+from app.features.auth.schemas.password_reset import (
+    ForgotPasswordRequest,
+    PasswordResetConfirm,
 )
+
 from app.features.auth.services.dependencies import (
     get_email_verification_service,
     get_login_service,

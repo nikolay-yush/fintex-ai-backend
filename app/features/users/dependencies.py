@@ -14,9 +14,9 @@ def get_user_repo(
 
 def get_user_service(
     db_async_session: AsyncSession = Depends(get_async_session),
+    user_repo: UserRepository = Depends(get_user_repo),
 ) -> UserService:
-    user_repo = UserRepository(db_async_session=db_async_session)
-
+    
     return UserService(
         db_async_session=db_async_session,
         user_repo=user_repo,

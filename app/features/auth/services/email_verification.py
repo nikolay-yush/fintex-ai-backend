@@ -3,12 +3,14 @@ from datetime import datetime, timedelta, timezone
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.email.service import EmailService
-from app.features.auth.exceptions import (
+
+from app.features.auth.exceptions.email_verification import (
     EmailAlreadyVerifiedException,
     EmailVerificationTokenExpiredException,
     EmailVerificationTokenNotFoundException,
     FailedToCreateVerificationTokenException,
 )
+
 from app.features.auth.repositories.email_verification_token import (
     EmailVerificationTokenRepository,
 )

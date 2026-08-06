@@ -23,10 +23,9 @@ from app.shared.base_model import BaseCRUDModel
 from app.features.users.enums import UserRole
 
 if TYPE_CHECKING:
-    from app.features.auth.models import RefreshToken
-    from app.features.auth.models import PasswordResetToken
-    from app.features.auth.models import EmailVerificationToken
-    from app.features.auth.models import PasswordResetToken
+    from app.features.auth.models.refresh_token import RefreshToken
+    from app.features.auth.models.password_reset_token import PasswordResetToken
+    from app.features.auth.models.email_verification_token import EmailVerificationToken
 
 
 class User(BaseCRUDModel):

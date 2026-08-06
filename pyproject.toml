@@ -29,11 +29,13 @@ dev = [
     "taskipy>=1.14.1",
 ]
 
+
 [tool.uv]
 package = true
 
 [tool.taskipy.tasks]
 dev = "fastapi dev"
+feature = "python -m scripts.create_feature"
 
 [tool.setuptools]
 packages = ["app"]

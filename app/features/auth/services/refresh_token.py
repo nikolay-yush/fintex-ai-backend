@@ -3,16 +3,21 @@ from datetime import datetime, timedelta, timezone
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.settings import settings
-from app.features.auth.exceptions import (
+
+from app.features.auth.exceptions.refresh_token import (
     InvalidRefreshTokenException,
     RefreshTokenExpiredException,
+)
+
+from app.features.auth.exceptions.authentication import (
     UserBannedException,
     UserInactiveException,
 )
+
 from app.features.auth.repositories.refresh_token import (
     RefreshTokenRepository,
 )
-from app.features.auth.schemas import TokenResponse
+from app.features.auth.schemas.authentication import TokenResponse
 from app.features.auth.security import (
     create_access_token,
     create_refresh_token,
