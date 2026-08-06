@@ -3,7 +3,7 @@ import pytest
 
 from app.features.auth.security import hash_password
 from app.features.users.models import User
-from app.features.users.repo import UserRepository
+from app.features.users.repository import UserRepository
 from tests.factories.user_factory import UserFactory
 
 

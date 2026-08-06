@@ -1,4 +1,4 @@
-from app.features.users.repo import UserRepository
+from app.features.users.repository import UserRepository
 from tests.factories.user_factory import UserFactory
 
 from sqlalchemy.ext.asyncio import AsyncSession

@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.db.postgres.session import get_async_session
 
-from app.features.users.repo import UserRepository
+from app.features.users.repository import UserRepository
 from app.features.users.service import UserService
 
 

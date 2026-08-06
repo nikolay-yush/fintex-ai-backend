@@ -15,6 +15,7 @@ class UserRepository(BaseCRUD[User]):
             db_async_session=db_async_session,
             model=User,
         )
+        
     async def get_user_by_email(self, email: str) -> User | None:
         query = select(self._model).where(self._model.email == email)
         result = await self._db_async_session.execute(query)

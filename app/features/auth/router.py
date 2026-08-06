@@ -1,10 +1,8 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Query, status
 
-from app.features.auth.dependencies import get_auth_service
 from app.features.auth.schemas import (
-    EmailVerificationRequest,
     ForgotPasswordRequest,
     PasswordResetConfirm,
     RefreshTokenRequest,
@@ -13,9 +11,27 @@ from app.features.auth.schemas import (
     UserLogin,
     UserRegister,
 )
-from app.features.auth.service import AuthService
+from app.features.auth.services.dependencies import (
+    get_email_verification_service,
+    get_login_service,
+    get_password_reset_service,
+    get_refresh_token_service,
+    get_registration_service,
+)
+from app.features.auth.services.email_verification import (
+    EmailVerificationService,
+)
+from app.features.auth.services.login import LoginService
+from app.features.auth.services.password_reset import (
+    PasswordResetService,
+)
+from app.features.auth.services.refresh_token import (
+    RefreshTokenService,
+)
+from app.features.auth.services.registration import (
+    RegistrationService,
+)
 from app.features.users.schemas import UserResponse
-from app.features.wallets import router
 
 
 auth_router = APIRouter(
@@ -24,71 +40,124 @@ auth_router = APIRouter(
 )
 
 
-@auth_router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
+# ============================================================================
+# Authentication
+# ============================================================================
+
+@auth_router.post(
+    "/register",
+    response_model=UserResponse,
+    status_code=status.HTTP_201_CREATED,
+)
 async def register(
     data: UserRegister,
-    auth_service: Annotated[
-        AuthService,
-        Depends(get_auth_service),
+    service: Annotated[
+        RegistrationService,
+        Depends(get_registration_service),
     ],
 ):
-    return await auth_service.register(data)
+    return await service.register(data)
 
-@auth_router.post("/login", response_model=TokenResponse, status_code=status.HTTP_200_OK)
+
+@auth_router.post(
+    "/login",
+    response_model=TokenResponse,
+    status_code=status.HTTP_200_OK,
+)
 async def login(
     data: UserLogin,
-    auth_service: Annotated[
-        AuthService,
-        Depends(get_auth_service),
+    service: Annotated[
+        LoginService,
+        Depends(get_login_service),
     ],
 ):
-    return await auth_service.login(data)
+    return await service.login(data)
 
 
-@auth_router.post("/verify-email", status_code=status.HTTP_200_OK, response_model=dict)
+@auth_router.post(
+    "/refresh",
+    response_model=TokenResponse,
+    status_code=status.HTTP_200_OK,
+)
+async def refresh_token(
+    data: RefreshTokenRequest,
+    service: Annotated[
+        RefreshTokenService,
+        Depends(get_refresh_token_service),
+    ],
+):
+    return await service.refresh_access_token(
+        refresh_token=data.refresh_token,
+    )
+
+
+# ============================================================================
+# Email verification
+# ============================================================================
+
+@auth_router.get(
+    "/verify-email",
+    response_model=dict,
+    status_code=status.HTTP_200_OK,
+)
 async def verify_email(
-    data: EmailVerificationRequest,
-    auth_service: Annotated[
-        AuthService,
-        Depends(get_auth_service),
+    token: Annotated[
+        str,
+        Query(description="Email verification token"),
+    ],
+    service: Annotated[
+        EmailVerificationService,
+        Depends(get_email_verification_service),
     ],
 ):
-    await auth_service.verify_email(
-        token=data.token,
+    await service.verify_email(
+        token=token,
     )
 
     return {
         "message": "Email successfully verified",
     }
 
+
 @auth_router.post(
     "/resend-verification",
+    response_model=dict,
     status_code=status.HTTP_200_OK,
 )
 async def resend_verification_email(
     data: ResendVerificationRequest,
-    auth_service: Annotated[
-        AuthService,
-        Depends(get_auth_service),
+    service: Annotated[
+        EmailVerificationService,
+        Depends(get_email_verification_service),
     ],
 ):
-    await auth_service.resend_verification_email(
-        data.email,
+    await service.resend_verification_email(
+        email=data.email,
     )
 
     return {
         "message": "Verification email sent",
     }
 
-@auth_router.post("/forgot-password", status_code=status.HTTP_200_OK, response_model=dict)
+
+# ============================================================================
+# Password recovery
+# ============================================================================
+
+@auth_router.post(
+    "/forgot-password",
+    response_model=dict,
+    status_code=status.HTTP_200_OK,
+)
 async def forgot_password(
     data: ForgotPasswordRequest,
-    auth_service: AuthService = Depends(
-        get_auth_service,
-    ),
+    service: Annotated[
+        PasswordResetService,
+        Depends(get_password_reset_service),
+    ],
 ) -> dict[str, str]:
 
-    await auth_service.request_password_reset(
+    await service.request_password_reset(
         email=data.email,
     )
 
@@ -96,33 +165,27 @@ async def forgot_password(
         "message": (
             "If an account with this email exists, "
             "a password reset email has been sent."
-        )
+        ),
     }
 
-@auth_router.post("/reset-password", status_code=status.HTTP_200_OK, response_model=dict)
+
+@auth_router.post(
+    "/reset-password",
+    response_model=dict,
+    status_code=status.HTTP_200_OK,
+)
 async def reset_password(
     data: PasswordResetConfirm,
-    auth_service: AuthService = Depends(
-        get_auth_service,
-    ),
+    service: Annotated[
+        PasswordResetService,
+        Depends(get_password_reset_service),
+    ],
 ) -> dict[str, str]:
 
-    await auth_service.reset_password(
+    await service.reset_password(
         data=data,
     )
 
     return {
-        "message": "Password successfully changed."
+        "message": "Password successfully changed.",
     }
-
-@auth_router.post("/refresh", response_model=TokenResponse, status_code=status.HTTP_200_OK)
-async def refresh_token(
-    data: RefreshTokenRequest,
-    auth_service: AuthService = Depends(
-        get_auth_service,
-    ),
-) -> TokenResponse:
-
-    return await auth_service.refresh_access_token(
-        refresh_token=data.refresh_token,
-    )

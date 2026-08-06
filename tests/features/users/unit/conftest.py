@@ -3,7 +3,7 @@ from unittest.mock import AsyncMock
 import pytest
 
 from app.features.users.models import User
-from app.features.users.repo import UserRepository
+from app.features.users.repository import UserRepository
 from app.features.users.service import UserService
 from tests.factories.user_factory import UserFactory
 

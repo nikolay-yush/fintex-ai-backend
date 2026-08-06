@@ -1,5 +1,5 @@
 from app.features.users.models import User
-from app.features.users.repo import UserRepository
+from app.features.users.repository import UserRepository
 from app.features.users.schemas import UserFilters
 from tests.factories.user_factory import UserFactory
 

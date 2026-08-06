@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.features.auth.exceptions import UserAlreadyExistsException
 from app.features.users.models import User
-from app.features.users.repo import UserRepository
+from app.features.users.repository import UserRepository
 from app.features.users.schemas import (
     UserCreate,
     UserFilters,
