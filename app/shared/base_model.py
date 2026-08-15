@@ -1,4 +1,4 @@
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column
 from app.core.db.postgres.base import Base
 
 class BaseCRUDModel(Base):

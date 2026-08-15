@@ -5,6 +5,9 @@ from app.core.db.postgres.session import get_async_session
 from app.core.email.dependencies import get_email_service
 from app.core.email.service import EmailService
 
+from app.core.security.brute_force import BruteForceProtection
+from app.core.security.dependencies import get_brute_force_protection
+from app.features.auth.services.logout import LogoutService
 from app.features.users.dependencies import get_user_repo
 from app.features.users.repository import UserRepository
 
@@ -60,10 +63,25 @@ def get_login_service(
     refresh_token_repo: RefreshTokenRepository = Depends(
         get_refresh_token_repo,
     ),
+    brute_force_protection: BruteForceProtection = Depends(
+        get_brute_force_protection,
+    ),
 ) -> LoginService:
     return LoginService(
         db_async_session=db_async_session,
         user_repo=user_repo,
+        refresh_token_repo=refresh_token_repo,
+        brute_force_protection=brute_force_protection,
+    )
+
+def get_logout_service(
+    db_async_session: AsyncSession = Depends(get_async_session),
+    refresh_token_repo: RefreshTokenRepository = Depends(
+        get_refresh_token_repo,
+    ),
+) -> LogoutService:
+    return LogoutService(
+        db_async_session=db_async_session,
         refresh_token_repo=refresh_token_repo,
     )
 

@@ -1,5 +1,6 @@
 import jwt
 import secrets
+import uuid
 
 from argon2 import PasswordHasher
 from argon2.exceptions import InvalidHashError, VerificationError
@@ -44,6 +45,7 @@ def create_access_token(user_id: int) -> str:
         "type": ACCESS_TOKEN_TYPE,
         "iat": now,
         "exp": expire,
+        "jti": str(uuid.uuid4()),
     }
 
     return jwt.encode(
@@ -97,6 +99,7 @@ def create_refresh_token(
         "type": REFRESH_TOKEN_TYPE,
         "iat": now,
         "exp": expire,
+        "jti": str(uuid.uuid4()),
     }
 
     return jwt.encode(
@@ -132,3 +135,8 @@ def decode_refresh_token(
         TypeError,
     ):
         return None
+
+def create_csrf_token() -> str:
+    """Generate a secure CSRF token."""
+
+    return secrets.token_urlsafe(32)

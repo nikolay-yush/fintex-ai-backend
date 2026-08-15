@@ -4,19 +4,20 @@ from app.shared.validators import validate_password_strength
 
 
 class ForgotPasswordRequest(BaseModel):
-    email: EmailStr
+    email: EmailStr = Field(..., description="User's email address")
 
 
 class PasswordReset(BaseModel):
-    token: str
-    password: str
-    
+    token: str = Field(..., min_length=8, max_length=128, description="Reset token")
+    password: str = Field(..., min_length=8, max_length=128, description="New password")
+
 class PasswordResetConfirm(BaseModel):
-    token: str
+    token: str = Field(..., min_length=8, max_length=128, description="Reset token")
 
     password: str = Field(
         min_length=8,
         max_length=128,
+        description="New password"
     )
 
     @field_validator("password")

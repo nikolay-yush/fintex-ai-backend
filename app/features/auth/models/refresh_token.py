@@ -25,6 +25,12 @@ class RefreshToken(BaseCRUDModel):
         index=True,
     )
 
+    token_family: Mapped[str] = mapped_column(
+        String(36),
+        nullable=False,
+        index=True,
+    )
+
     user_id: Mapped[int] = mapped_column(
         ForeignKey(
             "users.id",
@@ -42,6 +48,11 @@ class RefreshToken(BaseCRUDModel):
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         nullable=False,
+    )
+
+    revoked_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
     )
 
     user: Mapped["User"] = relationship(

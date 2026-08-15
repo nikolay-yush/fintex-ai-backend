@@ -1,4 +1,4 @@
-from typing import Annotated
+from typing import Annotated, Callable
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
@@ -74,3 +74,22 @@ async def get_current_admin(
 
     return current_user
 
+
+def require_roles(
+    *allowed_roles: UserRole,
+) -> Callable:
+    async def role_dependency(
+        current_user: Annotated[
+            User,
+            Depends(get_current_user),
+        ],
+    ) -> User:
+        if current_user.role not in allowed_roles:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Insufficient permissions",
+            )
+
+        return current_user
+
+    return role_dependency

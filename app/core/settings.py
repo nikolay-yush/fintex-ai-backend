@@ -12,6 +12,12 @@ class AppSettings(BaseModel):
     HOST_PROTOCOL: str = "http"
     HOST: str = "localhost"
     PORT: int = 8000
+    COOKIE_SECURE: bool = False
+    ALLOWED_ORIGINS: list[str] = []
+    
+    @property
+    def HOST_URL(self) -> str:
+        return f"{self.HOST_PROTOCOL}://{self.HOST}:{self.PORT}"
 
 
 # --- DB SETTINGS ---
@@ -26,6 +32,20 @@ class DBSettings(BaseModel):
     def DB_URL(self) -> str:
         return f"postgresql+asyncpg://{self.DB_USER}:{self.DB_PASSWORD}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
 
+
+class RedisSettings(BaseModel):
+    HOST: str = "localhost"
+    PORT: int = 6379
+    DB: int = 0
+    PASSWORD: str
+
+    @property
+    def URL(self) -> str:
+        return (
+            f"redis://:{self.PASSWORD}"
+            f"@{self.HOST}:{self.PORT}/{self.DB}"
+        )
+    
 
 # --- JWT SETTINGS ---
 class JWTSettings(BaseModel):
@@ -52,6 +72,7 @@ class MailSettings(BaseModel):
 class Settings(BaseSettings):
     app: AppSettings
     db: DBSettings
+    redis: RedisSettings
     jwt: JWTSettings
     mail: MailSettings
 

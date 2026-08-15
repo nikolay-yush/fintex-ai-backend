@@ -1,8 +1,10 @@
+import asyncio
 from datetime import datetime, timedelta, timezone
-
+from uuid import uuid4
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.settings import settings
+from app.core.security.brute_force import BruteForceProtection
 
 from app.features.auth.exceptions.authentication import (
     InvalidCredentialsException,
@@ -28,15 +30,19 @@ class LoginService:
         db_async_session: AsyncSession,
         user_repo: UserRepository,
         refresh_token_repo: RefreshTokenRepository,
+        brute_force_protection: BruteForceProtection,
     ) -> None:
         self.db_async_session = db_async_session
         self.user_repo = user_repo
         self.refresh_token_repo = refresh_token_repo
+        self.brute_force_protection = brute_force_protection
 
     async def login(
         self,
         data: UserLogin,
+        client_ip: str,
     ) -> TokenResponse:
+
         # Find user
         user = await self.user_repo.get_user_by_email(
             data.email,
@@ -50,21 +56,31 @@ class LoginService:
             data.password,
             user.hashed_password,
         ):
+            await self.brute_force_protection.record_failed_attempt(
+                data.email,
+                client_ip,
+            )
+
+            delay = await self.brute_force_protection.get_delay(
+                data.email,
+                client_ip,
+            )
+
+            if delay > 0:
+                await asyncio.sleep(delay)
+
             raise InvalidCredentialsException()
 
-        # Delete old refresh token
-        old_refresh_token = (
-            await self.refresh_token_repo.get_refresh_token_by_user_id(
-                user.id,
-            )
+        # Reset brute-force attempts
+        await self.brute_force_protection.reset_attempts(
+            data.email,
+            client_ip,
         )
 
-        if old_refresh_token is not None:
-            await self.refresh_token_repo.delete_refresh_token_by_id(
-                old_refresh_token.id,
-            )
+        # Create refresh token family
+        token_family = str(uuid4())
 
-        # Generate new refresh token
+        # Generate refresh token
         refresh_token = create_refresh_token(
             user.id,
         )
@@ -73,6 +89,7 @@ class LoginService:
         await self.refresh_token_repo.create_refresh_token(
             {
                 "token": refresh_token,
+                "token_family": token_family,
                 "user_id": user.id,
                 "expires_at": (
                     datetime.now(timezone.utc)
@@ -83,6 +100,7 @@ class LoginService:
                 "created_at": datetime.now(
                     timezone.utc,
                 ),
+                "revoked_at": None,
             },
         )
 

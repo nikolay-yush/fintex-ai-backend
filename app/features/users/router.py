@@ -2,8 +2,9 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, status
 
-from app.features.auth.dependencies import get_current_admin, get_current_user
+from app.features.auth.dependencies import get_current_admin, get_current_user, require_roles
 from app.features.users.dependencies import get_user_service
+from app.features.users.enums import UserRole
 from app.features.users.service import UserService
 from app.features.users.models import User
 from app.features.users.schemas import (
@@ -22,7 +23,7 @@ users_router = APIRouter(
 
 # ---------- READ ----------
 
-@users_router.get("/me", response_model=UserResponse)
+@users_router.get("/me", status_code=status.HTTP_200_OK, response_model=UserResponse, summary="Get the current user's profile")
 async def get_user_profile(
     current_user: Annotated[
         User,
@@ -37,7 +38,7 @@ async def get_user_profile(
 async def get_users(
     _: Annotated[
         User,
-        Depends(get_current_admin),
+        Depends(require_roles(UserRole.ADMIN)),
     ],
     user_service: Annotated[
         UserService,
@@ -80,7 +81,7 @@ async def delete_user_by_admin(
     user_id: int,
     _: Annotated[
         User,
-        Depends(get_current_admin),
+        Depends(require_roles(UserRole.ADMIN)),
     ],
     user_service: Annotated[
         UserService,

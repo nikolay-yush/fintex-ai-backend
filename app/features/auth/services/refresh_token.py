@@ -43,7 +43,6 @@ class RefreshTokenService:
         refresh_token: str,
     ) -> TokenResponse:
 
-        # Decode refresh token
         user_id = decode_refresh_token(
             refresh_token,
         )
@@ -51,7 +50,6 @@ class RefreshTokenService:
         if user_id is None:
             raise InvalidRefreshTokenException()
 
-        # Find refresh token
         db_refresh_token = (
             await self.refresh_token_repo.get_refresh_token(
                 refresh_token,
@@ -61,15 +59,21 @@ class RefreshTokenService:
         if db_refresh_token is None:
             raise InvalidRefreshTokenException()
 
-        # Check expiration
-        now = datetime.now(
-            timezone.utc,
-        )
+        # Refresh token reuse detection.
+        if db_refresh_token.revoked_at is not None:
+            await self.refresh_token_repo.revoke_token_family(
+                db_refresh_token.token_family,
+            )
+
+            await self.db_async_session.commit()
+
+            raise InvalidRefreshTokenException()
+
+        now = datetime.now(timezone.utc)
 
         if db_refresh_token.expires_at < now:
             raise RefreshTokenExpiredException()
 
-        # Find user
         user = await self.user_repo.get_one_by_id(
             user_id,
         )
@@ -77,46 +81,44 @@ class RefreshTokenService:
         if user is None:
             raise UserNotFoundException()
 
-        # Check user status
         if not user.is_active:
             raise UserInactiveException()
 
         if user.is_banned:
             raise UserBannedException()
 
-        # Delete old refresh token
-        await self.refresh_token_repo.delete_refresh_token_by_id(
+        # Atomic rotation: revoke only if not already revoked.
+        revoked = await self.refresh_token_repo.revoke_refresh_token(
             db_refresh_token.id,
         )
 
-        # Generate new refresh token
+        if not revoked:
+            raise InvalidRefreshTokenException()
+
         new_refresh_token = create_refresh_token(
             user.id,
         )
 
-        # Save refresh token
         await self.refresh_token_repo.create_refresh_token(
             {
                 "token": new_refresh_token,
+                "token_family": db_refresh_token.token_family,
                 "user_id": user.id,
                 "expires_at": (
-                    datetime.now(timezone.utc)
+                    now
                     + timedelta(
                         days=settings.jwt.JWT_REFRESH_TOKEN_EXPIRE_DAYS,
                     )
                 ),
-                "created_at": datetime.now(
-                    timezone.utc,
-                ),
+                "created_at": now,
+                "revoked_at": None,
             },
         )
 
-        # Generate access token
         access_token = create_access_token(
             user.id,
         )
 
-        # Commit transaction
         await self.db_async_session.commit()
 
         return TokenResponse(
