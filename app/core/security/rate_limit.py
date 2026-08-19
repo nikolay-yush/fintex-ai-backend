@@ -30,14 +30,11 @@ def rate_limit(
 
             if request is None:
                 raise RuntimeError(
-                    f"Rate limiter on '{endpoint.__name__}' requires 'request: Request' "
-                    "parameter in the endpoint signature."
+                    f"Rate limiter on '{endpoint.__name__}' requires "
+                    "'request: Request' parameter in the endpoint signature."
                 )
 
-            forwarded = request.headers.get("X-Forwarded-For")
-            if forwarded:
-                client_ip = forwarded.split(",")[0].strip()
-            elif request.client:
+            if request.client:
                 client_ip = request.client.host
             else:
                 raise HTTPException(

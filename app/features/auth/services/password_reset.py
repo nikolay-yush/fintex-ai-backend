@@ -46,7 +46,7 @@ class PasswordResetService:
         )
 
         if user is None:
-            raise UserNotFoundException()
+            return
 
         # Delete old token
         old_token = (
@@ -113,7 +113,7 @@ class PasswordResetService:
         )
 
         if user is None:
-            raise UserNotFoundException()
+            return
 
         # Update password
         user.hashed_password = hash_password(

@@ -14,6 +14,7 @@ class AppSettings(BaseModel):
     PORT: int = 8000
     COOKIE_SECURE: bool = False
     ALLOWED_ORIGINS: list[str] = []
+    ALLOWED_HOSTS: list[str] = []
     
     @property
     def HOST_URL(self) -> str:

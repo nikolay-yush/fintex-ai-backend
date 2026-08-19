@@ -291,6 +291,11 @@ async def logout_all(
     response_model=dict,
     status_code=status.HTTP_200_OK,
 )
+@rate_limit(
+    max_requests=3,
+    window_seconds=3600,
+    key_prefix="verification_email",
+)
 async def verify_email(
     token: Annotated[
         str,
@@ -314,6 +319,11 @@ async def verify_email(
     "/resend-verification",
     response_model=dict,
     status_code=status.HTTP_200_OK,
+)
+@rate_limit(
+    max_requests=3,
+    window_seconds=3600,
+    key_prefix="resend-verification",
 )
 async def resend_verification_email(
     data: ResendVerificationRequest,
@@ -340,6 +350,11 @@ async def resend_verification_email(
     response_model=dict,
     status_code=status.HTTP_200_OK,
 )
+@rate_limit(
+    max_requests=5,
+    window_seconds=900,
+    key_prefix="forgot_password",
+)
 async def forgot_password(
     data: ForgotPasswordRequest,
     service: Annotated[
@@ -364,6 +379,11 @@ async def forgot_password(
     "/reset-password",
     response_model=dict,
     status_code=status.HTTP_200_OK,
+)
+@rate_limit(
+    max_requests=10,
+    window_seconds=900,
+    key_prefix="reset_password",
 )
 async def reset_password(
     data: PasswordResetConfirm,

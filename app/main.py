@@ -1,8 +1,10 @@
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from starlette.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.core.security.security_headers import security_headers_middleware
 from app.core.settings import settings
 from app.core.logger import logger
 from app.api.v1.router import api_v1_router
@@ -34,11 +36,33 @@ app = FastAPI(
 )
 
 app.add_middleware(
+    TrustedHostMiddleware,
+    allowed_hosts=list(
+        settings.app.ALLOWED_HOSTS,
+    ),
+)
+
+app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.app.ALLOWED_ORIGINS,                
     allow_credentials=True, 
-    allow_methods=["*"],             
-    allow_headers=["*"],            
+    allow_methods=[
+        "GET",
+        "POST",
+        "PUT",
+        "PATCH",
+        "DELETE",
+        "OPTIONS",
+    ],
+    allow_headers=[
+        "Authorization",
+        "Content-Type",
+        "X-CSRF-Token",
+    ],           
+)
+
+app.middleware("http")(
+    security_headers_middleware,
 )
 
 

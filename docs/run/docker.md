@@ -13,6 +13,9 @@
 
 ---
 
+sudo docker compose --env-file .env.dev build backend
+sudo docker compose --env-file .env.dev up -d
+
 # Images
 
 ## Pull image
