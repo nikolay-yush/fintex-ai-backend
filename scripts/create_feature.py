@@ -1,7 +1,7 @@
 import sys
 from pathlib import Path
 
-def main():
+def create_feature():
     if len(sys.argv) < 2:
         print("Error occurred. Please provide a feature name!")
         print("Example: uv run task feature user_auth")
@@ -44,5 +44,5 @@ def main():
 
     print(f" Feature '{feature_name}' successfully created in {base_dir}!")
 
-if __name__ == "__main__":
-    main()
+
+create_feature()

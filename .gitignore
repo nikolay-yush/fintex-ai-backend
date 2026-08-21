@@ -1,87 +1,75 @@
-# Byte-compiled / optimized / DLL files
+# ==========================================
+# Python & Environment Cache
+# ==========================================
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
-
-# Distribution / packaging
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-share/python-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-MANIFEST
-
-# Virtual environments
+.venv/
 venv/
 env/
 ENV/
-.venv/
-.env
 
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-.DS_Store
-
-# Project specific
-# Database files
-*.db
-*.sqlite
-*.sqlite3
-
-# Environment variables
-.env
-.env.*
-.env.local
-.env.*.local
-
-# Logs
-logs/
-*.log
-
-# Testing
+# ==========================================
+# Build & Tools (uv, ruff, pytest)
+# ==========================================
+dist/
+build/
+*.egg-info/
 .pytest_cache/
 .coverage
 htmlcov/
-.tox/
 .mypy_cache/
 .ruff_cache/
+.tox/
 
-# FastAPI specific
-# Uploaded files (if you have file uploads)
-uploads/
-media/
-temp/
-
-# Docker
-.dockerignore
-
-# Jupyter Notebook
-.ipynb_checkpoints/
-
-# Alembic (migrations) 
-# alembic/versions/*.py
-# !alembic/versions/.gitkeep
-
-# Secrets
+# ==========================================
+# Environment & Secrets (Security)
+# ==========================================
+.env
+.env.*
+!.env.example
 *.key
 *.pem
 *.crt
 secrets/
 config/secrets/
+
+# ==========================================
+# Database, Media & Storage
+# ==========================================
+*.db
+*.sqlite
+*.sqlite3
+uploads/
+media/
+temp/
+storage/
+logs/
+*.log
+
+# ==========================================
+# Docker & Nginx Infrastructure
+# ==========================================
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+nginx/
+*.conf
+
+# ==========================================
+# IDEs & OS Files
+# ==========================================
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# ==========================================
+# Alembic & Task Runners
+# ==========================================
+.task/
+# alembic/versions/*.py
+# !alembic/versions/.gitkeep

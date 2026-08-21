@@ -37,6 +37,7 @@ package = true
 [tool.taskipy.tasks]
 dev = "fastapi dev"
 feature = "python -m scripts.create_feature"
+collect_models = "python -m scripts.collect_models"
 
 [tool.setuptools]
 packages = ["app"]

@@ -10,7 +10,7 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from app.core.settings import settings
 from app.core.db.postgres.base import Base
-import app.core.db.postgres.models  # noqa: F401
+import app.shared.models  # noqa: F401
 
 # Alembic Config
 config = context.config

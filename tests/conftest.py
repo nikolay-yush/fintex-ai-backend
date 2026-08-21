@@ -9,6 +9,6 @@ validate_test_env()
 
 pytest_plugins = [
     "tests.fixtures.database",
+    "tests.fixtures.redis",
     "tests.fixtures.client",
-    "tests.fixtures.users",
 ]
