@@ -16,6 +16,22 @@
 sudo docker compose --env-file .env.dev build backend
 sudo docker compose --env-file .env.dev up -d
 
+-----
+docker compose \
+  --env-file .env.test \
+  -f docker-compose.test.yml \
+  config
+
+ docker compose \
+  --env-file .env.test \
+  -f docker-compose.test.yml \
+  up -d --build
+
+docker compose \
+  -f docker-compose.test.yml \
+  ps
+  
+
 # Images
 
 ## Pull image

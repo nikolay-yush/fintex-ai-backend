@@ -9,11 +9,9 @@ from tests.factories.user_factory import UserFactory
 
 
 @pytest_asyncio.fixture
-async def auth_user(
+async def db_user(
     db_session: AsyncSession,
 ) -> User:
-    """Create and return an authenticated test user."""
-
     user = UserFactory.build_model(
         email="auth@example.com",
         full_name="Auth Test User",
@@ -33,8 +31,6 @@ async def auth_user(
 async def admin_user(
     db_session: AsyncSession,
 ) -> User:
-    """Create and return an admin test user."""
-
     user = UserFactory.build_model(
         email="admin@example.com",
         full_name="Admin Test User",
