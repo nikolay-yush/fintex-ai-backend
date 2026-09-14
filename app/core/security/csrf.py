@@ -20,8 +20,14 @@ MUTATING_METHODS = {
     "DELETE",
 }
 
+def create_csrf_token() -> str:
+    """Generate a secure CSRF token."""
+
+    return secrets.token_urlsafe(32)
+
 
 async def require_csrf(
+    request: Request,
     csrf_cookie: Annotated[
         str | None,
         Cookie(
@@ -35,6 +41,9 @@ async def require_csrf(
         ),
     ] = None,
 ) -> None:
+    
+    if request.method not in MUTATING_METHODS:
+        return
 
     if csrf_cookie is None:
         raise HTTPException(

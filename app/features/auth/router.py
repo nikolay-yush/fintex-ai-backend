@@ -21,7 +21,7 @@ from app.features.auth.schemas.password_reset import (
     PasswordResetConfirm,
 )
 
-from app.features.auth.security import create_csrf_token
+from app.core.security.csrf import create_csrf_token
 from app.features.auth.services.dependencies import (
     get_email_verification_service,
     get_login_service,
@@ -191,6 +191,7 @@ async def logout(
     ] = None,
 ) -> dict[str, str]:
 
+    
     if not refresh_token:
         raise RefreshTokenNotFoundException()
 

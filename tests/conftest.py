@@ -11,4 +11,6 @@ pytest_plugins = [
     "tests.fixtures.database",
     "tests.fixtures.redis",
     "tests.fixtures.client",
+    "tests.fixtures.http_request",
+    "tests.fixtures.user",
 ]
