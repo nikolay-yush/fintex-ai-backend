@@ -21,14 +21,14 @@ from app.features.auth.security import (
     create_refresh_token,
     verify_password,
 )
-from app.features.users.repository import UserRepository
+from app.features.users.repository import UsersRepository
 
 
 class LoginService:
     def __init__(
         self,
         db_async_session: AsyncSession,
-        user_repo: UserRepository,
+        user_repo: UsersRepository,
         refresh_token_repo: RefreshTokenRepository,
         brute_force_protection: BruteForceProtection,
     ) -> None:

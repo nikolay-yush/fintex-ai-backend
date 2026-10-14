@@ -24,14 +24,14 @@ from app.features.auth.security import (
     decode_refresh_token,
 )
 from app.features.users.exceptions import UserNotFoundException
-from app.features.users.repository import UserRepository
+from app.features.users.repository import UsersRepository
 
 
 class RefreshTokenService:
     def __init__(
         self,
         db_async_session: AsyncSession,
-        user_repo: UserRepository,
+        user_repo: UsersRepository,
         refresh_token_repo: RefreshTokenRepository,
     ) -> None:
         self.db_async_session = db_async_session

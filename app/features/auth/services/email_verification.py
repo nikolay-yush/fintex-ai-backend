@@ -18,14 +18,14 @@ from app.features.auth.security import (
     create_email_verification_token,
 )
 from app.features.users.exceptions import UserNotFoundException
-from app.features.users.repository import UserRepository
+from app.features.users.repository import UsersRepository
 
 
 class EmailVerificationService:
     def __init__(
         self,
         db_async_session: AsyncSession,
-        user_repo: UserRepository,
+        user_repo: UsersRepository,
         verification_token_repo: EmailVerificationTokenRepository,
         email_service: EmailService,
     ) -> None:

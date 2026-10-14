@@ -7,8 +7,8 @@ from app.features.users.enums import UserRole
 
 from app.features.auth.security import decode_access_token
 from app.features.users.models import User
-from app.features.users.repository import UserRepository
-from app.features.users.dependencies import get_user_repo
+from app.features.users.repository import UsersRepository
+from app.features.users.dependencies import get_users_repo
 
 oauth2_scheme = OAuth2PasswordBearer(
     tokenUrl="/api/v1/auth/login",
@@ -18,8 +18,8 @@ oauth2_scheme = OAuth2PasswordBearer(
 async def get_current_user(
     token: Annotated[str, Depends(oauth2_scheme)],
     user_repo: Annotated[
-        UserRepository,
-        Depends(get_user_repo),
+        UsersRepository,
+        Depends(get_users_repo),
     ],
 ) -> User:
     """Return the currently authenticated user."""

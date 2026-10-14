@@ -1,20 +1,17 @@
 from typing import Any
 
-from sqlalchemy import select
+from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.features.users.models import User
-from app.features.users.schemas import UserFilters
+from app.features.users.schemas import UsersFilters
 from app.shared.base_crud import BaseCRUD
 
 
-class UserRepository(BaseCRUD[User]):
+class UsersRepository(BaseCRUD[User]):
 
     def __init__(self, db_async_session: AsyncSession) -> None:
-        super().__init__(
-            db_async_session=db_async_session,
-            model=User,
-        )
+        super().__init__(db_async_session=db_async_session, model=User)
         
     async def get_user_by_email(self, email: str) -> User | None:
         query = select(self._model).where(self._model.email == email)
@@ -23,8 +20,9 @@ class UserRepository(BaseCRUD[User]):
     
     async def get_users_by_filters(
         self,
-        filters: UserFilters,
-    ) -> list[User]:
+        filters: UsersFilters,
+    ) -> tuple[list[User], int]:
+
         query = select(User)
 
         if filters.email is not None:
@@ -88,11 +86,25 @@ class UserRepository(BaseCRUD[User]):
                 User.updated_at <= filters.updated_to
             )
 
-        query = query.order_by(User.id.desc())
+        # Subquery for counting total number of users matching the filters
+        count_query = select(func.count()).select_from(query.subquery())
+        count_result = await self._db_async_session.execute(count_query)
+        total = count_result.scalar_one() or 0
 
+        query = query.order_by(User.id.desc())
         query = query.offset(filters.skip)
         query = query.limit(filters.limit)
 
         result = await self._db_async_session.execute(query)
+        users = list(result.scalars().all())
 
-        return list(result.scalars().all())
+        return users, total
+
+    async def create_user(self, data: dict[str, Any]) -> User | None:
+        return await super().create_one(data)
+    
+    async def update_user(self, user_id: int, data: dict[str, Any]) -> User | None:  
+        return await super().update_one(user_id, data)
+
+    async def delete_user(self, user_id: int) -> User | None:
+        return await super().delete_one(user_id)

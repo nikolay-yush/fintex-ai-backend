@@ -1,20 +1,20 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.features.users.exceptions import UserAlreadyExistsException
 from app.features.users.models import User
-from app.features.users.repository import UserRepository
+from app.features.users.repository import UsersRepository
 from app.features.users.schemas import (
     UserCreate,
-    UserFilters,
+    UsersFilters,
     UserUpdateProfile,
 )
 from app.features.users.exceptions import UserNotFoundException
 
 
-class UserService:
+class UsersService:
     def __init__(
         self,
         db_async_session: AsyncSession,
-        user_repo: UserRepository,
+        user_repo: UsersRepository,
     ) -> None:
         self.db_async_session = db_async_session
         self.user_repo = user_repo
@@ -34,8 +34,8 @@ class UserService:
 
     async def get_users_by_filters(
         self,
-        filters: UserFilters,
-    ) -> list[User]:
+        filters: UsersFilters,
+    ) -> tuple[list[User], int]:
         return await self.user_repo.get_users_by_filters(filters)
     
     #  **** CREATE OPERATIONS ****

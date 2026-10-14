@@ -3,7 +3,7 @@ from typing import List, Optional
 from datetime import datetime, timezone, timedelta
 from decimal import Decimal
 
-from alembic.environment import TYPE_CHECKING
+from typing import TYPE_CHECKING
 from pydantic import BaseModel
 from sqlalchemy import (
     CheckConstraint,

@@ -18,14 +18,14 @@ from app.features.auth.security import (
     hash_password,
 )
 from app.features.users.exceptions import UserNotFoundException
-from app.features.users.repository import UserRepository
+from app.features.users.repository import UsersRepository
 
 
 class PasswordResetService:
     def __init__(
         self,
         db_async_session: AsyncSession,
-        user_repo: UserRepository,
+        user_repo: UsersRepository,
         password_reset_token_repo: PasswordResetTokenRepository,
         email_service: EmailService,
     ) -> None:

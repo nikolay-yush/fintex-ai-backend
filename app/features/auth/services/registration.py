@@ -22,14 +22,14 @@ from app.features.auth.security import (
     create_email_verification_token,
     hash_password,
 )
-from app.features.users.repository import UserRepository
+from app.features.users.repository import UsersRepository
 
 
 class RegistrationService:
     def __init__(
         self,
         db_async_session: AsyncSession,
-        user_repo: UserRepository,
+        user_repo: UsersRepository,
         verification_token_repo: EmailVerificationTokenRepository,
         email_service: EmailService,
     ) -> None:

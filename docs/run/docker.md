@@ -12,7 +12,11 @@
 | `docker system df` | Show Docker disk usage |
 
 ---
+sudo docker exec -it fintex_ai_db psql -U postgres -d fintex_ai
+sudo docker exec -it backend-backend-1 uv run alembic revision --autogenerate -m "describe_your_changes_here"
+sudo docker exec -it backend-backend-1 uv run alembic upgrade head
 
+docker compose -p fintex_test -f docker-compose.test.yml up -d --build
 sudo docker compose --env-file .env.dev build backend
 sudo docker compose --env-file .env.dev up -d
 

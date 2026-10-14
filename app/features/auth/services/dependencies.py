@@ -8,8 +8,8 @@ from app.core.email.service import EmailService
 from app.core.security.brute_force import BruteForceProtection
 from app.core.security.dependencies import get_brute_force_protection
 from app.features.auth.services.logout import LogoutService
-from app.features.users.dependencies import get_user_repo
-from app.features.users.repository import UserRepository
+from app.features.users.dependencies import get_users_repo
+from app.features.users.repository import UsersRepository
 
 from app.features.auth.repositories.dependencies import (
     get_email_verification_token_repo,
@@ -43,7 +43,7 @@ from app.features.auth.services.registration import (
 
 def get_registration_service(
     db_async_session: AsyncSession = Depends(get_async_session),
-    user_repo: UserRepository = Depends(get_user_repo),
+    user_repo: UsersRepository = Depends(get_users_repo),
     verification_token_repo: EmailVerificationTokenRepository = Depends(
         get_email_verification_token_repo,
     ),
@@ -59,7 +59,7 @@ def get_registration_service(
 
 def get_login_service(
     db_async_session: AsyncSession = Depends(get_async_session),
-    user_repo: UserRepository = Depends(get_user_repo),
+    user_repo: UsersRepository = Depends(get_users_repo),
     refresh_token_repo: RefreshTokenRepository = Depends(
         get_refresh_token_repo,
     ),
@@ -88,7 +88,7 @@ def get_logout_service(
 
 def get_email_verification_service(
     db_async_session: AsyncSession = Depends(get_async_session),
-    user_repo: UserRepository = Depends(get_user_repo),
+    user_repo: UsersRepository = Depends(get_users_repo),
     verification_token_repo: EmailVerificationTokenRepository = Depends(
         get_email_verification_token_repo,
     ),
@@ -104,7 +104,7 @@ def get_email_verification_service(
 
 def get_password_reset_service(
     db_async_session: AsyncSession = Depends(get_async_session),
-    user_repo: UserRepository = Depends(get_user_repo),
+    user_repo: UsersRepository = Depends(get_users_repo),
     password_reset_token_repo: PasswordResetTokenRepository = Depends(
         get_password_reset_token_repo,
     ),
@@ -120,7 +120,7 @@ def get_password_reset_service(
 
 def get_refresh_token_service(
     db_async_session: AsyncSession = Depends(get_async_session),
-    user_repo: UserRepository = Depends(get_user_repo),
+    user_repo: UsersRepository = Depends(get_users_repo),
     refresh_token_repo: RefreshTokenRepository = Depends(
         get_refresh_token_repo,
     ),

@@ -6,6 +6,12 @@ from app.shared.validators import validate_password_strength
 
 
 # --- USER RESPONSES / READ ---
+class UsersListResponse(BaseModel):
+    items: list[UserResponse]
+    total: int
+    skip: int
+    limit: int
+    
 class UserResponse(BaseModel):
     id: int
     email: EmailStr
@@ -151,7 +157,7 @@ class AdminUpdateUserStatus(BaseModel):
 
 
 # --- FILTERS ---
-class UserFilters(BaseModel):
+class UsersFilters(BaseModel):
     # search
     email: EmailStr | None = None
     full_name: str | None = None
