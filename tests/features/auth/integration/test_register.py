@@ -2,9 +2,9 @@ from unittest.mock import AsyncMock
 
 from fastapi import status
 
-from app.features.auth.dependencies import get_auth_service
-from app.features.auth.exceptions import UserAlreadyExistsException
-from app.features.auth.service import AuthService
+from app.features.auth.services.dependencies import get_registration_service
+from app.features.auth.exceptions.registration import UserAlreadyExistsException
+from app.features.auth.services.registration import RegistrationService
 from app.features.users.models import User
 from app.main import app
 
@@ -17,14 +17,14 @@ class TestRegister:
         user: User,
     ):
         # Arrange
-        auth_service = AsyncMock(
-            spec=AuthService,
+        registration_service = AsyncMock(
+            spec=RegistrationService,
         )
 
-        auth_service.register.return_value = user
+        registration_service.register.return_value = user
 
-        app.dependency_overrides[get_auth_service] = (
-            lambda: auth_service
+        app.dependency_overrides[get_registration_service] = (
+            lambda: registration_service
         )
 
         data = {
@@ -50,10 +50,10 @@ class TestRegister:
         assert response_data["email"] == user.email
         assert response_data["full_name"] == user.full_name
 
-        auth_service.register.assert_awaited_once()
+        registration_service.register.assert_awaited_once()
 
         register_data = (
-            auth_service.register.call_args.args[0]
+            registration_service.register.call_args.args[0]
         )
 
         assert register_data.email == data["email"]
@@ -69,14 +69,14 @@ class TestRegister:
     ):
         # Arrange
         auth_service = AsyncMock(
-            spec=AuthService,
+            spec=RegistrationService,
         )
 
         auth_service.register.side_effect = (
             UserAlreadyExistsException()
         )
 
-        app.dependency_overrides[get_auth_service] = (
+        app.dependency_overrides[get_registration_service] = (
             lambda: auth_service
         )
 
@@ -112,10 +112,10 @@ class TestRegister:
     ):
         # Arrange
         auth_service = AsyncMock(
-            spec=AuthService,
+            spec=RegistrationService,
         )
 
-        app.dependency_overrides[get_auth_service] = (
+        app.dependency_overrides[get_registration_service] = (
             lambda: auth_service
         )
 

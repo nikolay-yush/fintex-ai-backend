@@ -10,7 +10,7 @@ from app.features.wallets.service import WalletsService
 from app.features.wallets.schemas import (
     WalletCreate,
     WalletListResponse,
-    WalletRead,
+    WalletResponse,
     WalletUpdate,
     WalletsFilters,
 )
@@ -32,22 +32,22 @@ async def get_wallets(
     current_user: Annotated[User, Depends(get_current_user)],
     wallet_service: Annotated[WalletsService, Depends(get_wallets_service)],
     filters: Annotated[WalletsFilters, Depends()],
-):
+)-> WalletListResponse:
     """Get a paginated and filtered list of wallets for the current user."""
-    items, total = await wallet_service.get_wallets(
+    response_wallets, total = await wallet_service.get_wallets(
         user_id=current_user.id, filters=filters
     )
-    return {
-        "items": items,
-        "total": total,
-        "skip": filters.skip,
-        "limit": filters.limit,
-    }
+    return WalletListResponse(
+        wallets=response_wallets,
+        total=total,
+        skip=filters.skip,
+        limit=filters.limit,
+    )
 
 
 @wallets_router.get(
     "/{wallet_id}",
-    response_model=WalletRead,
+    response_model=WalletResponse,
     summary="Get a specific wallet",
 )
 @rate_limit(max_requests=20, window_seconds=20, key_prefix="get_wallet_detail")
@@ -56,7 +56,7 @@ async def get_wallet(
     current_user: Annotated[User, Depends(get_current_user)],
     wallet_service: Annotated[WalletsService, Depends(get_wallets_service)],
     wallet_id: int = Path(..., ge=1, description="The ID of the wallet"),
-):
+)-> WalletResponse | None:
     """Get a specific wallet by ID, ensuring user ownership."""
     wallet = await wallet_service.get_wallet_by_id(
         wallet_id=wallet_id, user_id=current_user.id
@@ -66,7 +66,7 @@ async def get_wallet(
 
 @wallets_router.post(
     "",
-    response_model=WalletRead,
+    response_model=WalletResponse,
     status_code=status.HTTP_201_CREATED,
     summary="Create a new wallet",
 )
@@ -76,14 +76,15 @@ async def create_wallet(
     current_user: Annotated[User, Depends(get_current_user)],
     wallet_service: Annotated[WalletsService, Depends(get_wallets_service)],
     data: WalletCreate,
-):
+)-> WalletResponse | None:
     """Create a new wallet with a default zero balance for the current user."""
-    return await wallet_service.create_wallet(user_id=current_user.id, data=data)
+    response_wallet = await wallet_service.create_wallet(user_id=current_user.id, data=data)
+    return response_wallet
 
 
 @wallets_router.patch(
     "/{wallet_id}",
-    response_model=WalletRead,
+    response_model=WalletResponse,
     summary="Update wallet details",
 )
 @rate_limit(max_requests=10, window_seconds=60, key_prefix="update_wallet")
@@ -94,12 +95,12 @@ async def update_wallet(
     data: WalletUpdate,
     wallet_id: int = Path(..., ge=1),
     
-):
+) -> WalletResponse | None:
     """Update wallet properties (name or type). Balance cannot be modified here."""
-    wallet = await wallet_service.update_wallet(
+    response_wallet = await wallet_service.update_wallet(
         wallet_id=wallet_id, user_id=current_user.id, data=data
     )
-    return wallet
+    return response_wallet
 
 
 @wallets_router.delete(

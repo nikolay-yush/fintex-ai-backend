@@ -36,8 +36,9 @@ async def get_user_profile(
         User,
         Depends(get_current_user),
     ],
-):
-    return current_user
+) -> UserResponse:
+    return UserResponse.model_validate(current_user)
+
 
 
 # (Admin Only) Read users with filters
@@ -62,7 +63,7 @@ async def get_users(
         UsersFilters,
         Depends(),
     ],
-):
+)-> UsersListResponse:
     users, total = await user_service.get_users_by_filters(filters)
 
     return UsersListResponse(
@@ -93,11 +94,12 @@ async def update_user_profile(
         UsersService,
         Depends(get_users_service),
     ],
-):
-    return await user_service.update_user_profile(
+) -> UserResponse:
+    updated_user = await user_service.update_user_profile(
         current_user=current_user,
         data=data,
     )
+    return UserResponse.model_validate(updated_user)
 
 
 # ---------- DELETE ----------
@@ -119,6 +121,7 @@ async def delete_user_profile_by_user(
         Depends(get_users_service),
     ],
 ):
+    
     return await user_service.delete_user_by_id(
         user_id=current_user.id,
     )

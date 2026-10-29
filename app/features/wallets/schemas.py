@@ -6,6 +6,25 @@ from pydantic import BaseModel, ConfigDict, Field
 from app.features.wallets.models import WalletType
 
 
+class WalletResponse(BaseModel):
+    """Schema for returning wallet data to the client."""
+    id: int
+    user_id: int
+    name: str
+    type: WalletType
+    balance: Decimal
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+class WalletListResponse(BaseModel):
+    """Paginated response wrapper for a list of wallets."""
+    wallets: List[WalletResponse]
+    total: int
+    skip: int
+    limit: int
+
 class WalletCreate(BaseModel):
     """Schema for creating a new wallet. 
     Balance is excluded as it defaults to 0 on creation.
@@ -38,19 +57,6 @@ class WalletUpdate(BaseModel):
         None,
         description="New wallet type",
     )
-
-
-class WalletRead(BaseModel):
-    """Schema for returning wallet data to the client."""
-    id: int
-    user_id: int
-    name: str
-    type: WalletType
-    balance: Decimal
-    created_at: datetime
-    updated_at: datetime
-
-    model_config = ConfigDict(from_attributes=True)
 
 
 class WalletsFilters(BaseModel):
@@ -121,9 +127,3 @@ class WalletsFilters(BaseModel):
         description="Sort order: 'asc' for ascending, 'desc' for descending",
     )
 
-class WalletListResponse(BaseModel):
-    """Paginated response wrapper for a list of wallets."""
-    items: List[WalletRead]
-    total: int
-    skip: int
-    limit: int

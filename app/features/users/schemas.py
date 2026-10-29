@@ -5,13 +5,6 @@ from app.features.users.enums import UserRole
 from app.shared.validators import validate_password_strength
 
 
-# --- USER RESPONSES / READ ---
-class UsersListResponse(BaseModel):
-    items: list[UserResponse]
-    total: int
-    skip: int
-    limit: int
-    
 class UserResponse(BaseModel):
     id: int
     email: EmailStr
@@ -31,6 +24,14 @@ class UserResponse(BaseModel):
     updated_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+
+# --- USER RESPONSES / READ ---
+class UsersListResponse(BaseModel):
+    items: list[UserResponse]
+    total: int
+    skip: int
+    limit: int
 
 
 # --- USER CREATION ---

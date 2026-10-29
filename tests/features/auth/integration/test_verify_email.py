@@ -2,12 +2,12 @@ from unittest.mock import AsyncMock
 
 from fastapi import status
 
-from app.features.auth.dependencies import get_auth_service
-from app.features.auth.exceptions import (
+from app.features.auth.services.dependencies import get_email_verification_service
+from app.features.auth.exceptions.email_verification import (
     EmailVerificationTokenExpiredException,
     EmailVerificationTokenNotFoundException,
 )
-from app.features.auth.service import AuthService
+from app.features.auth.services.email_verification import EmailVerificationService
 from app.main import app
 
 
@@ -18,10 +18,10 @@ class TestVerifyEmail:
         client,
     ):
         # Arrange
-        auth_service = AsyncMock(spec=AuthService)
+        email_verification_service = AsyncMock(spec=EmailVerificationService)
 
-        app.dependency_overrides[get_auth_service] = (
-            lambda: auth_service
+        app.dependency_overrides[get_email_verification_service] = (
+            lambda: email_verification_service
         )
 
         # Act
@@ -39,7 +39,7 @@ class TestVerifyEmail:
             "message": "Email successfully verified",
         }
 
-        auth_service.verify_email.assert_awaited_once_with(
+        email_verification_service.auth_service.verify_email.assert_awaited_once_with(
             token="token",
         )
 
@@ -50,14 +50,14 @@ class TestVerifyEmail:
         client,
     ):
         # Arrange
-        auth_service = AsyncMock(spec=AuthService)
+        email_verification_service = AsyncMock(spec=EmailVerificationService)
 
-        auth_service.verify_email.side_effect = (
+        email_verification_service.verify_email.side_effect = (
             EmailVerificationTokenNotFoundException()
         )
 
-        app.dependency_overrides[get_auth_service] = (
-            lambda: auth_service
+        app.dependency_overrides[get_email_verification_service] = (
+            lambda: email_verification_service
         )
 
         # Act
@@ -78,14 +78,14 @@ class TestVerifyEmail:
         client,
     ):
         # Arrange
-        auth_service = AsyncMock(spec=AuthService)
+        email_verification_service = AsyncMock(spec=EmailVerificationService)
 
-        auth_service.verify_email.side_effect = (
+        email_verification_service.verify_email.side_effect = (
             EmailVerificationTokenExpiredException()
         )
 
-        app.dependency_overrides[get_auth_service] = (
-            lambda: auth_service
+        app.dependency_overrides[get_email_verification_service] = (
+            lambda: email_verification_service
         )
 
         # Act
