@@ -14,3 +14,9 @@ class UserNotFoundException(HTTPException):
             status_code=status.HTTP_404_NOT_FOUND,
             detail="User not found",
         )
+class UserValidationException(HTTPException):
+    def __init__(self, detail: str = "Invalid user data") -> None:
+        super().__init__(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=detail,
+        )

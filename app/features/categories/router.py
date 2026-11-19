@@ -1,5 +1,5 @@
 from typing import Annotated
-from fastapi import APIRouter, Depends, Path, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Path, Request, status
 
 from app.core.security.rate_limit import rate_limit 
 
@@ -10,7 +10,7 @@ from app.features.categories.service import CategoriesService
 from app.features.categories.schemas import (
     CategoryCreate,
     CategoryListResponse,
-    CategoryRead,
+    CategoryResponse,
     CategoryUpdate,
     CategoriesFilters,
 )
@@ -33,22 +33,22 @@ async def get_categories(
     category_service: Annotated[CategoriesService, Depends(get_categories_service)],
     filters: Annotated[CategoriesFilters, Depends()],
     wallet_id: int = Path(..., ge=1, description="The ID of the wallet"),
-):
-    """Get a paginated and filtered list of categories for a specific wallet belonging to the user."""
-    items, total = await category_service.get_categories(
+)-> CategoryListResponse:
+    """Get a paginated and filtered list of categories for a specific wallet."""
+    response_categories, total = await category_service.get_categories(
         wallet_id=wallet_id, user_id=current_user.id, filters=filters
     )
-    return {
-        "items": items,
-        "total": total,
-        "skip": filters.skip,
-        "limit": filters.limit,
-    }
+    return CategoryListResponse(
+        categories=response_categories,
+        total=total,
+        skip=filters.skip,
+        limit=filters.limit,
+    )
 
 
 @categories_router.get(
     "/{category_id}",
-    response_model=CategoryRead,
+    response_model=CategoryResponse,
     summary="Get a specific category",
 )
 @rate_limit(max_requests=20, window_seconds=20, key_prefix="get_category_detail")
@@ -58,17 +58,16 @@ async def get_category(
     category_service: Annotated[CategoriesService, Depends(get_categories_service)],
     wallet_id: int = Path(..., ge=1, description="The ID of the wallet"),
     category_id: int = Path(..., ge=1, description="The ID of the category"),
-):
+) -> CategoryResponse:
     """Get a specific category by ID, ensuring ownership through the wallet."""
-    category = await category_service.get_category_by_id(
+    return await category_service.get_category_by_id(
         category_id=category_id, wallet_id=wallet_id, user_id=current_user.id
     )
-    return category
 
 
 @categories_router.post(
     "",
-    response_model=CategoryRead,
+    response_model=CategoryResponse,
     status_code=status.HTTP_201_CREATED,
     summary="Create a new category in a wallet",
 )
@@ -79,7 +78,7 @@ async def create_category(
     category_service: Annotated[CategoriesService, Depends(get_categories_service)],
     data: CategoryCreate,
     wallet_id: int = Path(..., ge=1, description="The ID of the wallet"),
-):
+) -> CategoryResponse:
     """Create a new financial category for the specified wallet."""
     return await category_service.create_category(
         wallet_id=wallet_id, user_id=current_user.id, data=data
@@ -88,7 +87,7 @@ async def create_category(
 
 @categories_router.patch(
     "/{category_id}",
-    response_model=CategoryRead,
+    response_model=CategoryResponse,
     summary="Update category details",
 )
 @rate_limit(max_requests=10, window_seconds=60, key_prefix="update_category")
@@ -99,12 +98,11 @@ async def update_category(
     data: CategoryUpdate,
     wallet_id: int = Path(..., ge=1, description="The ID of the wallet"),
     category_id: int = Path(..., ge=1, description="The ID of the category"),
-):
+) -> CategoryResponse:
     """Update category properties (name, notation, or budget limit)."""
-    category = await category_service.update_category(
+    return await category_service.update_category(
         category_id=category_id, wallet_id=wallet_id, user_id=current_user.id, data=data
     )
-    return category
 
 
 @categories_router.delete(

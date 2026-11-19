@@ -49,7 +49,7 @@ class CategoryUpdate(BaseModel):
     )
 
 
-class CategoryRead(BaseModel):
+class CategoryResponse(BaseModel):
     """Schema for returning category data to the client."""
     id: int
     wallet_id: int
@@ -129,7 +129,7 @@ class CategoriesFilters(BaseModel):
 
 class CategoryListResponse(BaseModel):
     """Paginated response wrapper for a list of categories."""
-    items: List[CategoryRead]
+    categories: List[CategoryResponse]
     total: int
     skip: int
     limit: int

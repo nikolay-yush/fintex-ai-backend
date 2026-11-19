@@ -3,7 +3,7 @@ from fastapi import HTTPException, status
 from sqlalchemy.exc import IntegrityError
 
 from app.features.categories.repositories  import CategoriesRepository
-from app.features.categories.schemas import CategoryCreate, CategoryUpdate, CategoriesFilters
+from app.features.categories.schemas import CategoryCreate, CategoryListResponse, CategoryResponse, CategoryUpdate, CategoriesFilters
 from app.features.categories.models import Category
 from app.features.wallets.repository import WalletsRepository
 
@@ -30,12 +30,15 @@ class CategoriesService:
 
     async def get_categories(
         self, wallet_id: int, user_id: int, filters: CategoriesFilters
-    ) -> tuple[list[Category], int]:
+    ) -> tuple[list[CategoryResponse], int]:
         """Get filtered and paginated list of categories for a specific wallet belonging to the user."""
         await self._verify_wallet_ownership(wallet_id=wallet_id, user_id=user_id)
-        return await self._categories_repo.get_categories_by_filters(wallet_id=wallet_id, filters=filters)
+        categories, total = await self._categories_repo.get_categories_by_filters(wallet_id=wallet_id, filters=filters)
+        response_categories = [CategoryResponse.model_validate(category) for category in categories]
 
-    async def get_category_by_id(self, category_id: int, wallet_id: int, user_id: int) -> Category:
+        return response_categories, total
+
+    async def get_category_by_id(self, category_id: int, wallet_id: int, user_id: int) -> CategoryResponse | None:
         """Get a specific category ensuring ownership through the wallet."""
         await self._verify_wallet_ownership(wallet_id=wallet_id, user_id=user_id)
         
@@ -47,9 +50,9 @@ class CategoriesService:
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Category not found in this wallet",
             )
-        return category
+        return CategoryResponse.model_validate(category)
 
-    async def create_category(self, wallet_id: int, user_id: int, data: CategoryCreate) -> Category | None:
+    async def create_category(self, wallet_id: int, user_id: int, data: CategoryCreate) -> CategoryResponse | None:
         """Create a new category within a verified wallet."""
         await self._verify_wallet_ownership(wallet_id=wallet_id, user_id=user_id)
 
@@ -60,7 +63,7 @@ class CategoriesService:
             category = await self._categories_repo.create_category(category_data)
             await self._db_async_session.commit()
             await self._db_async_session.refresh(category)
-            return category
+            return CategoryResponse.model_validate(category)
         
         except IntegrityError:
             await self._db_async_session.rollback()
@@ -71,7 +74,7 @@ class CategoriesService:
 
     async def update_category(
         self, category_id: int, wallet_id: int, user_id: int, data: CategoryUpdate
-    ) -> Category | None:
+    ) -> CategoryResponse | None:
         """Update category details with strict ownership and existence verification."""
         category = await self.get_category_by_id(
             category_id=category_id, wallet_id=wallet_id, user_id=user_id
@@ -85,7 +88,7 @@ class CategoriesService:
             updated_category = await self._categories_repo.update_category(category_id, update_data)
             await self._db_async_session.commit()
             await self._db_async_session.refresh(updated_category)
-            return updated_category
+            return CategoryResponse.model_validate(updated_category)
         
         except IntegrityError:
             await self._db_async_session.rollback()

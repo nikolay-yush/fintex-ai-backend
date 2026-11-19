@@ -88,7 +88,7 @@ class TransactionUpdate(BaseModel):
     )
 
 
-class TransactionRead(BaseModel):
+class TransactionResponse(BaseModel):
     """Schema for returning transaction data to the client."""
     id: int
     wallet_id: int
@@ -179,7 +179,7 @@ class TransactionsFilters(BaseModel):
 
 class TransactionListResponse(BaseModel):
     """Paginated response wrapper for a list of transactions."""
-    items: List[TransactionRead]
+    items: List[TransactionResponse]
     total: int
     skip: int
     limit: int

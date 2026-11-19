@@ -1,20 +1,24 @@
 from typing import Any
 
-from sqlalchemy import select, func
+from sqlalchemy import delete, insert, select, func, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.features.users.models import User
 from app.features.users.schemas import UsersFilters
-from app.shared.base_crud import BaseCRUD
+from app.core.db.postgres.base import Base
 
 
-class UsersRepository(BaseCRUD[User]):
-
+class UsersRepository(Base):
     def __init__(self, db_async_session: AsyncSession) -> None:
-        super().__init__(db_async_session=db_async_session, model=User)
-        
-    async def get_user_by_email(self, email: str) -> User | None:
-        query = select(self._model).where(self._model.email == email)
+        self._db_async_session = db_async_session 
+
+    async def get_user_by_email(self, user_email: str) -> User | None:
+        query = select(User).where(User.email == user_email)
+        result = await self._db_async_session.execute(query)
+        return result.scalar_one_or_none()
+
+    async def get_user_by_id(self, user_id: int) -> User | None:
+        query = select(User).where(User.id == user_id)
         result = await self._db_async_session.execute(query)
         return result.scalar_one_or_none()
     
@@ -101,10 +105,26 @@ class UsersRepository(BaseCRUD[User]):
         return users, total
 
     async def create_user(self, data: dict[str, Any]) -> User | None:
-        return await super().create_one(data)
+        created_user = await self._db_async_session.execute(
+            insert(User)
+            .values(**data)
+            .returning(User)
+        )
+        return created_user.scalar_one_or_none()
     
     async def update_user(self, user_id: int, data: dict[str, Any]) -> User | None:  
-        return await super().update_one(user_id, data)
+        updated_user = await self._db_async_session.execute(
+                update(User)
+                .where(User.id == user_id)
+                .values(**data)
+                .returning(User)
+            )
+        return updated_user.scalar_one_or_none()
 
     async def delete_user(self, user_id: int) -> User | None:
-        return await super().delete_one(user_id)
+        deleted_user = await self._db_async_session.execute(
+            delete(User)
+            .where(User.id == user_id)
+            .returning(User)
+        )
+        return deleted_user.scalar_one_or_none()

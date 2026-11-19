@@ -1,5 +1,5 @@
 from typing import Annotated
-from fastapi import APIRouter, Depends, Path, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Path, Request, status
 
 from app.core.security.rate_limit import rate_limit 
 
@@ -56,13 +56,12 @@ async def get_wallet(
     current_user: Annotated[User, Depends(get_current_user)],
     wallet_service: Annotated[WalletsService, Depends(get_wallets_service)],
     wallet_id: int = Path(..., ge=1, description="The ID of the wallet"),
-)-> WalletResponse | None:
+)-> WalletResponse:
     """Get a specific wallet by ID, ensuring user ownership."""
-    wallet = await wallet_service.get_wallet_by_id(
+    return await wallet_service.get_wallet_by_id(
         wallet_id=wallet_id, user_id=current_user.id
     )
-    return wallet
-
+    
 
 @wallets_router.post(
     "",
@@ -76,10 +75,9 @@ async def create_wallet(
     current_user: Annotated[User, Depends(get_current_user)],
     wallet_service: Annotated[WalletsService, Depends(get_wallets_service)],
     data: WalletCreate,
-)-> WalletResponse | None:
+)-> WalletResponse:
     """Create a new wallet with a default zero balance for the current user."""
-    response_wallet = await wallet_service.create_wallet(user_id=current_user.id, data=data)
-    return response_wallet
+    return await wallet_service.create_wallet(user_id=current_user.id, data=data)
 
 
 @wallets_router.patch(
@@ -95,12 +93,11 @@ async def update_wallet(
     data: WalletUpdate,
     wallet_id: int = Path(..., ge=1),
     
-) -> WalletResponse | None:
+) -> WalletResponse:
     """Update wallet properties (name or type). Balance cannot be modified here."""
-    response_wallet = await wallet_service.update_wallet(
+    return await wallet_service.update_wallet(
         wallet_id=wallet_id, user_id=current_user.id, data=data
     )
-    return response_wallet
 
 
 @wallets_router.delete(

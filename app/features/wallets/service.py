@@ -15,7 +15,6 @@ class WalletsService:
     ) -> None:
         self._db_async_session = db_async_session
         self._wallets_repo = wallets_repo
-
     async def get_wallets(
         self, user_id: int, filters: WalletsFilters
     ) -> tuple[list[WalletResponse], int]:
@@ -25,17 +24,19 @@ class WalletsService:
         return response_wallets, total
 
 
-    async def get_wallet_by_id(self, wallet_id: int, user_id: int) -> WalletResponse | None:
+    async def get_wallet_by_id(self, wallet_id: int, user_id: int) -> WalletResponse:
         """Get a specific wallet ensuring it belongs to the user (Security check)."""
         wallet = await self._wallets_repo.get_wallet_by_id_and_user(wallet_id=wallet_id, user_id=user_id)
+        
         if not wallet:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Wallet not found or access denied",
             )
+        
         return WalletResponse.model_validate(wallet)
 
-    async def create_wallet(self, user_id: int, data: WalletCreate) -> WalletResponse | None:
+    async def create_wallet(self, user_id: int, data: WalletCreate) -> WalletResponse:
         """Create a new wallet for the user with zero balance."""
         wallet_data = data.model_dump()
         wallet_data["user_id"] = user_id  
@@ -43,22 +44,40 @@ class WalletsService:
         wallet = await self._wallets_repo.create_wallet(wallet_data)
         await self._db_async_session.commit()
         await self._db_async_session.refresh(wallet)
-        return WalletResponse.model_validate(wallet) if wallet else None
+        
+        if not wallet:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Failed to create wallet",
+            )
+        
+        return WalletResponse.model_validate(wallet)
 
     async def update_wallet(
         self, wallet_id: int, user_id: int, data: WalletUpdate
-    ) -> WalletResponse | None:
+    ) -> WalletResponse:
         """Update wallet details with strict ownership verification."""
         wallet = await self.get_wallet_by_id(wallet_id=wallet_id, user_id=user_id)
         
+        if not wallet:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Wallet not found",
+            )
+        
         update_data = data.model_dump(exclude_unset=True)
-        if not update_data:
-            return wallet
-
         updated_wallet = await self._wallets_repo.update_wallet(wallet_id, update_data)
+        
         await self._db_async_session.commit()
         await self._db_async_session.refresh(updated_wallet)
-        return WalletResponse.model_validate(updated_wallet) if updated_wallet else None
+
+        if not updated_wallet:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Failed to update wallet",
+            )   
+        
+        return WalletResponse.model_validate(updated_wallet)
 
     async def delete_wallet(self, wallet_id: int, user_id: int) -> bool:
         """Delete wallet with ownership verification."""

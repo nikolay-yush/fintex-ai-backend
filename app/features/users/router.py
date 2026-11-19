@@ -95,11 +95,10 @@ async def update_user_profile(
         Depends(get_users_service),
     ],
 ) -> UserResponse:
-    updated_user = await user_service.update_user_profile(
+    return await user_service.update_user_profile(
         current_user=current_user,
         data=data,
     )
-    return UserResponse.model_validate(updated_user)
 
 
 # ---------- DELETE ----------
